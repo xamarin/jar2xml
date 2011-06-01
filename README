@@ -1,0 +1,2 @@
+jar2xml is a tool to extract API information from a java archive
+and associated documentation.  The information is stored in XML format.
