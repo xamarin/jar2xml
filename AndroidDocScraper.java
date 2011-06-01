@@ -110,23 +110,5 @@ public class AndroidDocScraper implements IDocScraper {
 			return result;
 		}
 		return new String [0];
-/*
-		System.err.println ("found " + regex.toString ());
-		// found it. Lookup the parameter names.
-		String[] names = new String[types.length];
-		// now we're sure we have the right method, find the parameter names!
-		String regexParams = "<DD><CODE>([^<]*)</CODE>";
-		Pattern patternParams = Pattern.compile(regexParams);
-		int start = matcher.end();
-		Matcher matcherParams = patternParams.matcher(javadoc);
-		for (int i = 0; i < types.length; i++) {
-			boolean find = matcherParams.find(start);
-			if (!find)
-				return Paranamer.EMPTY_NAMES;
-			start = matcherParams.end();
-			names[i] = matcherParams.group(1);
-		}
-		return names;
-*/
 	}
 }
