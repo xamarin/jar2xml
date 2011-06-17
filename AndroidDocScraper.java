@@ -50,37 +50,12 @@ public class AndroidDocScraper implements IDocScraper {
 			throw new IllegalArgumentException (dir.getAbsolutePath() + " does not appear to be an android doc reference directory.");
 	}
 
-
-	String doc_content;
-	Class cached_class;
-
 	public String[] getParameterNames (Class declarer, String name, Type[] ptypes)
 	{
 		String path = declarer.getName ().replace('.', '/').replace ('$', '.') + ".html";
-		if (cached_class != declarer) {
-			File file = new File(root.getPath() + "/" + path);
-			if (!file.isFile ())
-				return null;
-			FileInputStream stream = null;
-			StringBuffer html_buffer = new StringBuffer ();
-			try {
-				stream = new FileInputStream (file);
-				InputStreamReader rdr;
-				rdr = new InputStreamReader (stream, "UTF-8");
-				BufferedReader br = new BufferedReader (rdr);
-				String text;
-				while ((text = br.readLine ()) != null) {
-					html_buffer.append (text);
-					html_buffer.append ("\n");
-				}
-				stream.close();
-			} catch (Exception e) {
-				return new String [0];
-			}
-
-			cached_class = declarer;
-			doc_content = html_buffer.toString ();
-		}
+		File file = new File(root.getPath() + "/" + path);
+		if (!file.isFile ())
+			return null;
 
 		StringBuffer buffer = new StringBuffer ();
 		buffer.append ("<span class=\"sympad\"><a href=\".*");
@@ -94,21 +69,34 @@ public class AndroidDocScraper implements IDocScraper {
 			buffer.append (JavaClass.getGenericTypeName (ptypes[i]));
 		}
 		buffer.append("\\E\\)\".*\\((.*)\\)");
-
 		Pattern pattern = Pattern.compile (buffer.toString());
-		Matcher matcher = pattern.matcher (doc_content);
-		if (matcher.find ()) {
-			String plist = matcher.group (1);
-			String[] parms = plist.split (", ");
-			if (parms.length != ptypes.length)
-				System.err.println ("failed matching " + buffer.toString ());
-			String[] result = new String [ptypes.length];
-			for (int i = 0; i < ptypes.length; i++) {
-				String[] toks = parms [i].split ("\\s+");
-				result [i] = toks [toks.length - 1];
+
+		try {
+			FileInputStream stream = new FileInputStream (file);
+			InputStreamReader rdr;
+			rdr = new InputStreamReader (stream, "UTF-8");
+			BufferedReader br = new BufferedReader (rdr);
+			String text;
+			while ((text = br.readLine ()) != null) {
+				Matcher matcher = pattern.matcher (text);
+				if (matcher.find ()) {
+					String plist = matcher.group (1);
+					String[] parms = plist.split (", ");
+					if (parms.length != ptypes.length)
+						System.err.println ("failed matching " + buffer.toString ());
+					String[] result = new String [ptypes.length];
+					for (int i = 0; i < ptypes.length; i++) {
+						String[] toks = parms [i].split ("\\s+");
+						result [i] = toks [toks.length - 1];
+					}
+					return result;
+				}
 			}
-			return result;
+			stream.close();
+		} catch (Exception e) {
+			return new String [0];
 		}
+
 		return new String [0];
 	}
 }
