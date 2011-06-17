@@ -84,6 +84,10 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
 			return;
 		Element e = doc.createElement ("constructor");
+		e.setAttribute ("name", jclass.getSimpleName ());
+		e.setAttribute ("type", jclass.getName ());
+		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
+		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		appendParameters (parent.getAttribute ("name"), ctor.getGenericParameterTypes (), doc, e);
 		parent.appendChild (e);
