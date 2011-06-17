@@ -107,7 +107,9 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
+		e.setAttribute ("transient", Modifier.isTransient (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
+		e.setAttribute ("volatile", Modifier.isVolatile (mods) ? "true" : "false");
 		setDeprecatedAttr (e, field.getDeclaredAnnotations ());
 		if (Modifier.isStatic (mods) && Modifier.isFinal (mods) && Modifier.isPublic (mods)) {
 			String type = e.getAttribute ("type");
