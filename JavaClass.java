@@ -24,6 +24,7 @@
 
 package jar2xml;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -89,6 +90,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
+		setDeprecatedAttr (e, ctor.getDeclaredAnnotations ());
 		appendParameters (parent.getAttribute ("name"), ctor.getGenericParameterTypes (), doc, e);
 		parent.appendChild (e);
 	}
@@ -106,6 +108,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
+		setDeprecatedAttr (e, field.getDeclaredAnnotations ());
 		if (Modifier.isStatic (mods) && Modifier.isFinal (mods) && Modifier.isPublic (mods)) {
 			String type = e.getAttribute ("type");
 			try {
@@ -144,6 +147,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
+		setDeprecatedAttr (e, method.getDeclaredAnnotations ());
 		appendParameters (method.getName (), method.getGenericParameterTypes (), doc, e);
 		parent.appendChild (e);
 	}
@@ -165,6 +169,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : Modifier.isProtected (mods) ? "protected" : "private");
+		setDeprecatedAttr (e, jclass.getDeclaredAnnotations ());
 		for (Type iface : jclass.getGenericInterfaces ()) {
 			Element iface_elem = doc.createElement ("implements");
 			iface_elem.setAttribute ("name", getGenericTypeName (iface));
@@ -217,6 +222,15 @@ public class JavaClass implements Comparable<JavaClass> {
 		} else {
 			return type.toString ().replace ('$', '.');
 		}
+	}
+
+	void setDeprecatedAttr (Element elem, Annotation[] annotations)
+	{
+		boolean isDeprecated = false;
+		for (Annotation a : annotations)
+			if (a instanceof java.lang.Deprecated)
+				isDeprecated = true;
+		elem.setAttribute ("deprecated", isDeprecated ? "deprecated" : "not deprecated");
 	}
 
 	static ArrayList<IDocScraper> scrapers;
