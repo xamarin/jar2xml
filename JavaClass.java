@@ -144,7 +144,7 @@ public class JavaClass implements Comparable<JavaClass> {
 			return;
 		Element e = doc.createElement ("method");
 		e.setAttribute ("name", method.getName ());
-		e.setAttribute ("returns", getGenericTypeName (method.getGenericReturnType ()));
+		e.setAttribute ("return", getGenericTypeName (method.getGenericReturnType ()));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
