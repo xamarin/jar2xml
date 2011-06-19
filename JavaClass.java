@@ -156,6 +156,10 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	public void appendToDocument (Document doc, Element parent)
 	{
+		int mods = jclass.getModifiers ();
+		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
+			return;
+
 		Element e = doc.createElement (jclass.isInterface () ? "interface" : "class");
 		if (!jclass.isInterface ()) {
 			Type t = jclass.getGenericSuperclass ();
@@ -166,11 +170,10 @@ public class JavaClass implements Comparable<JavaClass> {
 		String qualname = jclass.getName ();
 		String name = qualname.substring (jclass.getPackage ().getName ().length () + 1, qualname.length ()).replace ("$", ".");
 		e.setAttribute ("name", name);
-		int mods = jclass.getModifiers ();
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
-		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : Modifier.isProtected (mods) ? "protected" : "private");
+		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, jclass.getDeclaredAnnotations ());
 		for (Type iface : jclass.getGenericInterfaces ()) {
 			Element iface_elem = doc.createElement ("implements");
