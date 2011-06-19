@@ -25,7 +25,7 @@
 package jar2xml;
 
 import java.io.File;
-import java.io.StringWriter;
+import java.io.FileWriter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -41,30 +41,33 @@ public class Start {
 	public static void main (String[] args)
 	{
 		String docs = null;
-		String path = null;
-		String usage = "Usage: jar2xml <jarfile> [--docpath=<javadocs>]";
+		String jar_path = null;
+		String out_path = null;
+		String usage = "Usage: jar2xml --jar=<jarfile> --out=<file> [--docpath=<javadocs>]";
 
 		for (String arg : args) {
 			if (arg.startsWith ("--docpath=")) {
 				docs = arg.substring (10);
-			} else if (arg.endsWith (".jar")) {
-				path = arg;
+			} else if (arg.startsWith ("--jar=")) {
+				jar_path = arg.substring (6);
+			} else if (arg.startsWith ("--out=")) {
+				out_path = arg.substring (6);
 			} else {
 				System.err.println (usage);
 				System.exit (1);
 			}
 		}
 
-		if (path == null) {
+		if (jar_path == null || out_path == null) {
 			System.err.println (usage);
 			System.exit (1);
 		}
 
 		JavaArchive jar = null;
 		try {
-			jar = new JavaArchive (path);
+			jar = new JavaArchive (jar_path);
 		} catch (Exception e) {
-			System.err.println ("Couldn't open java archive at specified path " + path);
+			System.err.println ("Couldn't open java archive at specified path " + jar_path);
 			System.exit (1);
 		}
 
@@ -90,16 +93,13 @@ public class Start {
 			pkg.appendToDocument (doc, root);
 
 		try {
-			// Boilerplate much?
 			TransformerFactory transformer_factory = TransformerFactory.newInstance ();
 			Transformer transformer = transformer_factory.newTransformer ();
-			transformer.setOutputProperty (OutputKeys.OMIT_XML_DECLARATION, "yes");
 			transformer.setOutputProperty (OutputKeys.INDENT, "yes");
-			StringWriter writer = new StringWriter ();
+			FileWriter writer = new FileWriter (new File (out_path));
 			StreamResult result = new StreamResult (writer);
 			DOMSource source = new DOMSource (doc);
 			transformer.transform (source, result);
-			System.out.println (writer.toString ());
 		} catch (Exception e) {
 			System.err.println ("Couldn't format xml file - exception occurred:" + e.getMessage ());
 		}
