@@ -180,12 +180,12 @@ public class JavaClass implements Comparable<JavaClass> {
 			iface_elem.setAttribute ("name", getGenericTypeName (iface));
 			e.appendChild (iface_elem);
 		}
-		for (Field field : jclass.getDeclaredFields ())
-			appendField (field, doc, e);
 		for (Constructor ctor : jclass.getDeclaredConstructors ())
 			appendCtor (ctor, doc, e);
 		for (Method method : jclass.getDeclaredMethods ())
 			appendMethod (method, doc, e);
+		for (Field field : jclass.getDeclaredFields ())
+			appendField (field, doc, e);
 		parent.appendChild (e);
 	}
 
