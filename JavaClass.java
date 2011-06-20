@@ -31,6 +31,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -154,6 +156,17 @@ public class JavaClass implements Comparable<JavaClass> {
 		parent.appendChild (e);
 	}
 
+	String getSignature (Method method)
+	{
+		StringBuffer sig = new StringBuffer ();
+		sig.append (method.getName ());
+		for (Type t : method.getGenericParameterTypes ()) {
+			sig.append (":");
+			sig.append (getGenericTypeName (t));
+		}
+		return sig.toString ();
+	}
+
 	public void appendToDocument (Document doc, Element parent)
 	{
 		int mods = jclass.getModifiers ();
@@ -182,8 +195,32 @@ public class JavaClass implements Comparable<JavaClass> {
 		}
 		for (Constructor ctor : jclass.getDeclaredConstructors ())
 			appendCtor (ctor, doc, e);
-		for (Method method : jclass.getDeclaredMethods ())
-			appendMethod (method, doc, e);
+
+		Map<String, Method> methods = new HashMap <String, Method> ();
+		for (Method method : jclass.getDeclaredMethods ()) {
+			String key = getSignature (method);
+			if (methods.containsKey (key)) {
+				Type method_type = method.getGenericReturnType ();
+				Method hashed = methods.get (key);
+				Type hashed_type = hashed.getGenericReturnType ();
+				Class mret = method_type instanceof Class ? (Class) method_type : null;
+				Class hret = hashed_type instanceof Class ? (Class) hashed_type : null;
+				if (mret == null || (hret != null && hret.isAssignableFrom (mret)))
+					methods.put (key, method);
+				else if (hret != null && !mret.isAssignableFrom (hret)) {
+					System.out.println ("method collision: " + jclass.getName () + "." + key);
+					System.out.println ("   " + hashed.getGenericReturnType ().toString () + " ----- " + method.getGenericReturnType ().toString ());
+				}
+			} else {
+				methods.put (key, method);
+			}
+		}
+		
+		ArrayList <String> sigs = new ArrayList<String> (methods.keySet ());
+		java.util.Collections.sort (sigs);
+		for (String sig : sigs)
+			appendMethod (methods.get (sig), doc, e);
+
 		for (Field field : jclass.getDeclaredFields ())
 			appendField (field, doc, e);
 		parent.appendChild (e);
