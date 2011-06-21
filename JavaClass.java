@@ -30,6 +30,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -182,7 +183,13 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		String qualname = jclass.getName ();
 		String name = qualname.substring (jclass.getPackage ().getName ().length () + 1, qualname.length ()).replace ("$", ".");
-		e.setAttribute ("name", name);
+		StringBuffer type_params = new StringBuffer ();
+		for (TypeVariable tp : jclass.getTypeParameters ()) {
+			if (type_params.length () > 0)
+				type_params.append (", ");
+			type_params.append (tp.getName ());
+		}
+		e.setAttribute ("name", name + (type_params.length () > 0 ? "<" + type_params.toString () + ">" : ""));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
