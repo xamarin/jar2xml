@@ -196,8 +196,18 @@ public class JavaClass implements Comparable<JavaClass> {
 		for (Constructor ctor : jclass.getDeclaredConstructors ())
 			appendCtor (ctor, doc, e);
 
+		Class base_class = jclass.getSuperclass ();
 		Map<String, Method> methods = new HashMap <String, Method> ();
 		for (Method method : jclass.getDeclaredMethods ()) {
+			if (base_class != null) {
+				try {
+					Method base_method = base_class.getMethod (method.getName (), method.getParameterTypes ());
+					if (!Modifier.isAbstract (base_method.getModifiers ()))
+						continue;
+				} catch (NoSuchMethodException nsme) {
+				}
+			}
+
 			String key = getSignature (method);
 			if (methods.containsKey (key)) {
 				Type method_type = method.getGenericReturnType ();
