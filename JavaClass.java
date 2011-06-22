@@ -146,7 +146,13 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
 			return;
 		Element e = doc.createElement ("method");
-		e.setAttribute ("name", method.getName ());
+		StringBuffer type_params = new StringBuffer ();
+		for (TypeVariable tp : method.getTypeParameters ()) {
+			if (type_params.length () > 0)
+				type_params.append (", ");
+			type_params.append (tp.getName ());
+		}
+		e.setAttribute ("name", method.getName () + (type_params.length () > 0 ? "<" + type_params.toString () + ">" : ""));
 		e.setAttribute ("return", getGenericTypeName (method.getGenericReturnType ()));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
