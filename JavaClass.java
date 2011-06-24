@@ -284,6 +284,19 @@ public class JavaClass implements Comparable<JavaClass> {
 				}
 			}
 			return name.replace ('$', '.');
+		} else if (type.getClass ().toString ().equals ("class sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl")) {
+			String name = type.toString ();
+			int idx = name.indexOf ('<');
+			if (idx > 0) {
+				String tps = name.substring (idx);
+				String basename = name.substring (0, idx);
+				int nest = basename.lastIndexOf ('$');
+				if (nest  > 0) {
+					name = basename.substring (nest / 2 + 1) + tps;
+					return name.replace ('$', '.');
+				}
+			}
+			return name.replace ('$', '.');
 		} else {
 			return type.toString ().replace ('$', '.');
 		}
