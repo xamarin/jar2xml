@@ -213,12 +213,19 @@ public class JavaClass implements Comparable<JavaClass> {
 		Map<String, Method> methods = new HashMap <String, Method> ();
 		for (Method method : jclass.getDeclaredMethods ()) {
 			if (base_class != null) {
-				try {
-					Method base_method = base_class.getMethod (method.getName (), method.getParameterTypes ());
-					if (!Modifier.isAbstract (base_method.getModifiers ()))
-						continue;
-				} catch (NoSuchMethodException nsme) {
+				Method base_method = null;
+				Type[] parms = method.getGenericParameterTypes ();
+				Class ancestor = base_class;
+				while (ancestor != null && base_method == null) {
+					try {
+						base_method = ancestor.getDeclaredMethod (method.getName (), method.getParameterTypes ());
+					} catch (Exception ex) {
+					}
+					ancestor = ancestor.getSuperclass ();
 				}
+							
+				if (base_method != null && !Modifier.isAbstract (base_method.getModifiers ()))
+					continue;
 			}
 
 			String key = getSignature (method);
