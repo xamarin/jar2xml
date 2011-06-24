@@ -224,8 +224,11 @@ public class JavaClass implements Comparable<JavaClass> {
 					ancestor = ancestor.getSuperclass ();
 				}
 							
-				if (base_method != null && !Modifier.isAbstract (base_method.getModifiers ()))
-					continue;
+				if (base_method != null) {
+					int base_mods = base_method.getModifiers ();
+					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mods) == Modifier.isPublic (base_mods)))
+						continue;
+				}
 			}
 
 			String key = getSignature (method);
