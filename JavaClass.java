@@ -214,8 +214,8 @@ public class JavaClass implements Comparable<JavaClass> {
 		for (Method method : jclass.getDeclaredMethods ()) {
 			if (base_class != null) {
 				Method base_method = null;
-				Type[] parms = method.getGenericParameterTypes ();
 				Class ancestor = base_class;
+				int mmods = method.getModifiers ();
 				while (ancestor != null && base_method == null) {
 					try {
 						base_method = ancestor.getDeclaredMethod (method.getName (), method.getParameterTypes ());
@@ -226,7 +226,7 @@ public class JavaClass implements Comparable<JavaClass> {
 							
 				if (base_method != null) {
 					int base_mods = base_method.getModifiers ();
-					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mods) == Modifier.isPublic (base_mods)))
+					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)))
 						continue;
 				}
 			}
