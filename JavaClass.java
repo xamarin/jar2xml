@@ -215,10 +215,10 @@ public class JavaClass implements Comparable<JavaClass> {
 		Class base_class = jclass.getSuperclass ();
 		Map<String, Method> methods = new HashMap <String, Method> ();
 		for (Method method : jclass.getDeclaredMethods ()) {
-			if (base_class != null) {
+			int mmods = method.getModifiers ();
+			if (base_class != null && !Modifier.isFinal (mmods)) {
 				Method base_method = null;
 				Class ancestor = base_class;
-				int mmods = method.getModifiers ();
 				while (ancestor != null && base_method == null) {
 					try {
 						base_method = ancestor.getDeclaredMethod (method.getName (), method.getParameterTypes ());
