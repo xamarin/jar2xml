@@ -56,28 +56,31 @@ public class JavaClass implements Comparable<JavaClass> {
 		return jclass.getName ();
 	}
 
-	String[] getParameterNames (String name, Type[] types)
+	String[] getParameterNames (String name, Type[] types, boolean isVarArgs)
 	{
 		for (IDocScraper s : scrapers) {
-			String[] names = s.getParameterNames (jclass, name, types);
+			String[] names = s.getParameterNames (jclass, name, types, isVarArgs);
 			if (names != null && names.length > 0)
 				return names;
 		}
 		return null;
 	}
 
-	void appendParameters (String name, Type[] types, Document doc, Element parent)
+	void appendParameters (String name, Type[] types, boolean isVarArgs, Document doc, Element parent)
 	{
 		if (types == null || types.length == 0)
 			return;
 
-		String[] names = getParameterNames (name, types);
+		String[] names = getParameterNames (name, types, isVarArgs);
 		
 		int cnt = 0;
 		for (int i = 0; i < types.length; i++) {
 			Element e = doc.createElement ("parameter");
 			e.setAttribute ("name", names == null ? "p" + i : names [i]);
-			e.setAttribute ("type", getGenericTypeName (types [i]));
+			String type = getGenericTypeName (types [i]);
+			if (isVarArgs && i == types.length - 1)
+				type = type.replace ("[]", "...");
+			e.setAttribute ("type", type);
 			parent.appendChild (e);
 		}
 	}
@@ -94,7 +97,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, ctor.getDeclaredAnnotations ());
-		appendParameters (parent.getAttribute ("name"), ctor.getGenericParameterTypes (), doc, e);
+		appendParameters (parent.getAttribute ("name"), ctor.getGenericParameterTypes (), ctor.isVarArgs (), doc, e);
 		parent.appendChild (e);
 	}
 
@@ -159,7 +162,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, method.getDeclaredAnnotations ());
-		appendParameters (method.getName (), method.getGenericParameterTypes (), doc, e);
+		appendParameters (method.getName (), method.getGenericParameterTypes (), method.isVarArgs (), doc, e);
 		parent.appendChild (e);
 	}
 

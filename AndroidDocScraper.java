@@ -50,7 +50,7 @@ public class AndroidDocScraper implements IDocScraper {
 			throw new IllegalArgumentException (dir.getAbsolutePath() + " does not appear to be an android doc reference directory.");
 	}
 
-	public String[] getParameterNames (Class declarer, String name, Type[] ptypes)
+	public String[] getParameterNames (Class declarer, String name, Type[] ptypes, boolean isVarArgs)
 	{
 		String path = declarer.getName ().replace('.', '/').replace ('$', '.') + ".html";
 		File file = new File(root.getPath() + "/" + path);
@@ -66,7 +66,10 @@ public class AndroidDocScraper implements IDocScraper {
 		for (int i = 0; i < ptypes.length; i++) {
 			if (i != 0)
 				buffer.append (", ");
-			buffer.append (JavaClass.getGenericTypeName (ptypes[i]));
+			String type = JavaClass.getGenericTypeName (ptypes[i]);
+			if (isVarArgs && i == ptypes.length - 1)
+				type = type.replace ("[]", "...");
+			buffer.append (type);
 		}
 		buffer.append("\\E\\)\".*\\((.*)\\)");
 		Pattern pattern = Pattern.compile (buffer.toString());
