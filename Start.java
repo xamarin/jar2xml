@@ -25,7 +25,8 @@
 package jar2xml;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -96,7 +97,7 @@ public class Start {
 			TransformerFactory transformer_factory = TransformerFactory.newInstance ();
 			Transformer transformer = transformer_factory.newTransformer ();
 			transformer.setOutputProperty (OutputKeys.INDENT, "yes");
-			FileWriter writer = new FileWriter (new File (out_path));
+			OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(out_path),"UTF-8");
 			StreamResult result = new StreamResult (writer);
 			DOMSource source = new DOMSource (doc);
 			transformer.transform (source, result);
