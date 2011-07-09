@@ -149,13 +149,8 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
 			return;
 		Element e = doc.createElement ("method");
-		StringBuffer type_params = new StringBuffer ();
-		for (TypeVariable tp : method.getTypeParameters ()) {
-			if (type_params.length () > 0)
-				type_params.append (", ");
-			type_params.append (tp.getName ());
-		}
-		e.setAttribute ("name", method.getName () + (type_params.length () > 0 ? "<" + type_params.toString () + ">" : ""));
+		String type_params = getTypeParameters (method.getTypeParameters ());
+		e.setAttribute ("name", method.getName () + type_params);
 		e.setAttribute ("return", getGenericTypeName (method.getGenericReturnType ()));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
@@ -164,6 +159,29 @@ public class JavaClass implements Comparable<JavaClass> {
 		setDeprecatedAttr (e, method.getDeclaredAnnotations ());
 		appendParameters (method.getName (), method.getGenericParameterTypes (), method.isVarArgs (), doc, e);
 		parent.appendChild (e);
+	}
+
+	static String getTypeParameters (TypeVariable<?>[] typeParameters)
+	{
+		if (typeParameters.length == 0)
+			return "";
+
+		StringBuffer type_params = new StringBuffer ();
+		type_params.append ("<");
+		for (TypeVariable tp : typeParameters) {
+			if (type_params.length () > 1)
+				type_params.append (", ");
+			type_params.append (tp.getName ());
+			Type[] bounds = tp.getBounds ();
+			if (bounds.length == 1 && bounds [0] == Object.class)
+				continue;
+			type_params.append (" extends ").append (getGenericTypeName (bounds [0]));
+			for (int i = 1; i < bounds.length; i++) {
+				type_params.append (" & ").append (getGenericTypeName (bounds [i]));
+			}
+		}
+		type_params.append (">");
+		return type_params.toString ();
 	}
 
 	String getSignature (Method method)
@@ -192,13 +210,8 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		String qualname = jclass.getName ();
 		String name = qualname.substring (jclass.getPackage ().getName ().length () + 1, qualname.length ()).replace ("$", ".");
-		StringBuffer type_params = new StringBuffer ();
-		for (TypeVariable tp : jclass.getTypeParameters ()) {
-			if (type_params.length () > 0)
-				type_params.append (", ");
-			type_params.append (tp.getName ());
-		}
-		e.setAttribute ("name", name + (type_params.length () > 0 ? "<" + type_params.toString () + ">" : ""));
+		String type_params = getTypeParameters (jclass.getTypeParameters ());
+		e.setAttribute ("name", name + type_params);
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
