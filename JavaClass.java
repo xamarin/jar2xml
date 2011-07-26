@@ -34,6 +34,8 @@ import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -311,22 +313,14 @@ public class JavaClass implements Comparable<JavaClass> {
 			}
 			return name.replace ('$', '.');
 		} else if (type.getClass ().toString ().equals ("class sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl")) {
-			String name = type.toString ();
-			int idx = name.indexOf ('<');
-			if (idx > 0) {
-				String tps = name.substring (idx);
-				String basename = name.substring (0, idx);
-				int nest = basename.lastIndexOf ('$');
-				if (nest  > 0) {
-					name = basename.substring (nest / 2 + 1) + tps;
-					return name.replace ('$', '.');
-				}
-			}
+			String name = duplicatePackageAndClass.matcher (type.toString ()).replaceAll ("$1");
 			return name.replace ('$', '.');
 		} else {
 			return type.toString ().replace ('$', '.');
 		}
 	}
+
+	static final Pattern duplicatePackageAndClass = Pattern.compile ("([a-z0-9.]+[A-Z][a-z0-9]+)\\.\\1");
 
 	void setDeprecatedAttr (Element elem, Annotation[] annotations)
 	{
