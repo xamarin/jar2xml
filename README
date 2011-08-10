@@ -14,12 +14,6 @@ It is also implemented as "make test-8"
 
 TODOs:
 
-- constructor/@type for nested class is wrong.
-  "android.Manifest$permission" -> "android.Manifest.permission"
-- constructor/@name too
-  "anim" -> "R.anim"
-- exception is not handled.
-
 - some failures on retrieving @Deprecated
   Manifest.permission.RESTART_PACKAGES
   Manifest.permission..SET_PREFERRED_APPLICATIONS

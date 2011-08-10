@@ -175,8 +175,50 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, method.getDeclaredAnnotations ());
 		appendParameters (method.getName (), method.getGenericParameterTypes (), method.isVarArgs (), doc, e);
+
+		Class [] excTypes = method.getExceptionTypes ();
+		sortClasses (excTypes);
+		for (Class exc : excTypes) {
+			Element exe = doc.createElement ("exception");
+			exe.setAttribute ("name", exc.getSimpleName ());
+			exe.setAttribute ("type", exc.getName ());
+			exe.appendChild (doc.createTextNode ("\n"));
+			e.appendChild (exe);
+		}
+
 		e.appendChild (doc.createTextNode ("\n"));
 		parent.appendChild (e);
+	}
+	
+	static void sortClasses (Class [] classes)
+	{
+		java.util.Arrays.sort (classes, new java.util.Comparator () {
+			public int compare (Object o1, Object o2)
+			{
+				return ((Class) o1).getName ().compareTo (((Class) o2).getName ());
+			}
+			public boolean equals (Object obj)
+			{
+				return super.equals (obj);
+			}
+		});
+	}
+	
+	static void sortTypes (Type [] types)
+	{
+		java.util.Arrays.sort (types, new java.util.Comparator () {
+			public int compare (Object o1, Object o2)
+			{
+				if (o1 instanceof Class && o2 instanceof Class)
+					return ((Class) o1).getSimpleName ().compareTo (((Class) o2).getSimpleName ());
+				else
+					return getGenericTypeName ((Type) o1).compareTo (getGenericTypeName ((Type) o2));
+			}
+			public boolean equals (Object obj)
+			{
+				return super.equals (obj);
+			}
+		});
 	}
 
 	static String getTypeParameters (TypeVariable<?>[] typeParameters)
@@ -235,7 +277,9 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, jclass.getDeclaredAnnotations ());
-		for (Type iface : jclass.getGenericInterfaces ()) {
+		Type [] ifaces = jclass.getGenericInterfaces ();
+		sortTypes (ifaces);
+		for (Type iface : ifaces) {
 			Element iface_elem = doc.createElement ("implements");
 			iface_elem.setAttribute ("name", getGenericTypeName (iface));
 			iface_elem.appendChild (doc.createTextNode ("\n"));

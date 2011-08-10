@@ -24,6 +24,7 @@
 
 package jar2xml;
 
+import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.jar.JarFile;
@@ -37,13 +38,14 @@ import java.util.List;
 public class JavaArchive {
 
 	private JarFile file;
-	private URLClassLoader loader;
+	private ClassLoader loader;
 
 	public JavaArchive (String filename) throws Exception
 	{
+		URL url = new File (filename).getAbsoluteFile ().toURL ();
 		file = new JarFile (filename);
 		try {
-			loader = new URLClassLoader (new URL[] { new URL ("file://" + filename) }, JavaArchive.class.getClassLoader ());
+			loader = new URLClassLoader (new URL[] { url }, JavaArchive.class.getClassLoader ());
 		} catch (Throwable t) {
 			throw new Exception ();
 		}
