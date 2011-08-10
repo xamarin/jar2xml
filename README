@@ -14,6 +14,8 @@ It is also implemented as "make test-8"
 
 TODOs:
 
+- generics on interface name should not contain arguments part (i.e. <Foo>).
+  e.g. android.accounts.AccountManagerCallback<V>
 - some failures on retrieving @Deprecated
   Manifest.permission.RESTART_PACKAGES
   Manifest.permission..SET_PREFERRED_APPLICATIONS
