@@ -1,2 +1,31 @@
 jar2xml is a tool to extract API information from a java archive
 and associated documentation.  The information is stored in XML format.
+
+Easy comparison:
+
+	$ java -jar jar2xml.jar --jar=/home/atsushi/android-sdk-linux_x86/platforms/android-8/android.jar --out=_8.xml --docpath=/home/atsushi/android-sdk-linux_x86/docs/reference
+	$ mono-xmltool --prettyprint 8.xml > 8_.xml
+	$ xmlstarlet c14n 8_.xml > 8.xml
+	$ mono-xmltool --prettyprint _8.xml > _8_.xml
+	$ xmlstarlet c14n _8_.xml > _8.xml
+	$ diff -u 8.xml _8.xml
+
+It is also implemented as "make test-8"
+
+TODOs:
+
+- constructor/@type for nested class is wrong.
+  "android.Manifest$permission" -> "android.Manifest.permission"
+- constructor/@name too
+  "anim" -> "R.anim"
+- field/@abstract="false" is extraneous.
+- method/@native is missing.
+- method/@synchronized is missing.
+- exception is not handled.
+
+- some failures on retrieving @Deprecated
+  Manifest.permission.RESTART_PACKAGES
+  Manifest.permission..SET_PREFERRED_APPLICATIONS
+  (This class seems to be "generated" in AOSP, found only in out/target/...)
+
+
