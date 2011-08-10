@@ -83,6 +83,7 @@ public class JavaClass implements Comparable<JavaClass> {
 			if (isVarArgs && i == types.length - 1)
 				type = type.replace ("[]", "...");
 			e.setAttribute ("type", type);
+			e.appendChild (doc.createTextNode ("\n"));
 			parent.appendChild (e);
 		}
 	}
@@ -100,6 +101,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, ctor.getDeclaredAnnotations ());
 		appendParameters (parent.getAttribute ("name"), ctor.getGenericParameterTypes (), ctor.isVarArgs (), doc, e);
+		e.appendChild (doc.createTextNode ("\n"));
 		parent.appendChild (e);
 	}
 
@@ -114,7 +116,8 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("type", getGenericTypeName (field.getGenericType ()));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
-		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
+		if (Modifier.isAbstract (mods))
+			e.setAttribute ("abstract", "true");
 		e.setAttribute ("transient", Modifier.isTransient (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		e.setAttribute ("volatile", Modifier.isVolatile (mods) ? "true" : "false");
@@ -142,6 +145,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				System.err.println ("Error accessing constant field " + field.getName () + " value for class " + getName ());
 			}
 		}
+		e.appendChild (doc.createTextNode ("\n"));
 		parent.appendChild (e);
 	}
 
@@ -157,9 +161,12 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
+		e.setAttribute ("native", Modifier.isNative (mods) ? "true" : "false");
+		e.setAttribute ("synchronized", Modifier.isSynchronized (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, method.getDeclaredAnnotations ());
 		appendParameters (method.getName (), method.getGenericParameterTypes (), method.isVarArgs (), doc, e);
+		e.appendChild (doc.createTextNode ("\n"));
 		parent.appendChild (e);
 	}
 
@@ -222,6 +229,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		for (Type iface : jclass.getGenericInterfaces ()) {
 			Element iface_elem = doc.createElement ("implements");
 			iface_elem.setAttribute ("name", getGenericTypeName (iface));
+			iface_elem.appendChild (doc.createTextNode ("\n"));
 			e.appendChild (iface_elem);
 		}
 		for (Constructor ctor : jclass.getDeclaredConstructors ())

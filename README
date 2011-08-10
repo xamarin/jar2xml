@@ -18,9 +18,6 @@ TODOs:
   "android.Manifest$permission" -> "android.Manifest.permission"
 - constructor/@name too
   "anim" -> "R.anim"
-- field/@abstract="false" is extraneous.
-- method/@native is missing.
-- method/@synchronized is missing.
 - exception is not handled.
 
 - some failures on retrieving @Deprecated
