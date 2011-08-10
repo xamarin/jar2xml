@@ -87,6 +87,15 @@ public class JavaClass implements Comparable<JavaClass> {
 			parent.appendChild (e);
 		}
 	}
+	
+	String getConstructorName (Class c)
+	{
+		String n = "";
+		Class e = c.getEnclosingClass ();
+		if (e != null)
+			n = getConstructorName (e);
+		return (n != "" ? n + "." : n) + c.getSimpleName ();
+	}
 
 	void appendCtor (Constructor ctor, Document doc, Element parent)
 	{
@@ -94,8 +103,8 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
 			return;
 		Element e = doc.createElement ("constructor");
-		e.setAttribute ("name", jclass.getSimpleName ());
-		e.setAttribute ("type", jclass.getName ());
+		e.setAttribute ("name", getConstructorName (jclass));
+		e.setAttribute ("type", jclass.getName ().replace ('$', '.'));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");

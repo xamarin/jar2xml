@@ -25,4 +25,9 @@ TODOs:
   Manifest.permission..SET_PREFERRED_APPLICATIONS
   (This class seems to be "generated" in AOSP, found only in out/target/...)
 
+  It is likely that java.lang.reflect supports only subset of annotations.
+  http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/
+  This would be useful for better annotation analysis:
+  http://code.google.com/p/reflections/
+
 
