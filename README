@@ -12,10 +12,16 @@ Easy comparison:
 
 It is also implemented as "make test-8"
 
+Difference from AOSP API XML:
+
+- generics on interface name should contain arguments part (i.e. <Foo>).
+  e.g. "android.accounts.AccountManagerCallback" should be 
+       "android.accounts.AccountManagerCallback<V>"
+
+  This will lead to huge reduction on monodroid/Mono.Android/metadata.
+
 TODOs:
 
-- generics on interface name should not contain arguments part (i.e. <Foo>).
-  e.g. android.accounts.AccountManagerCallback<V>
 - some failures on retrieving @Deprecated
   Manifest.permission.RESTART_PACKAGES
   Manifest.permission..SET_PREFERRED_APPLICATIONS
