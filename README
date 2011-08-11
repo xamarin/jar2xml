@@ -22,16 +22,36 @@ Difference from AOSP API XML:
 
   - Class/@name and constructor/@type are already generic aware.
 
-TODOs:
+TODO:
 
-- some failures on retrieving @Deprecated
-  Manifest.permission.RESTART_PACKAGES
-  Manifest.permission..SET_PREFERRED_APPLICATIONS
-  (This class seems to be "generated" in AOSP, found only in out/target/...)
+- retrieve member annotations from javadoc. (See Notes on Annotations described later.)
 
-  It is likely that java.lang.reflect supports only subset of annotations.
-  http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/
-  This would be useful for better annotation analysis:
-  http://code.google.com/p/reflections/
+
+Notes on Annotations:
+
+Current implementation uses java.lang.reflect API to get member
+annotations, but it won't work as expected.
+
+I found that .class files in android.jar are stripped off field
+annotations. For example, java.net.HttpURLConnection#HTTP_SERVER_ERROR 
+should be annotated with @Deprecated, but it isn't.
+On the other hand, class annotations are alive.
+(e.g. java/security/Certificate.class)
+
+The reason why we somehow retrieved @Deprecated on
+HttpURLConnection#HTTP_SERVER_ERROR is likely that
+URLClassLoader.getClass() actually does not load java.* classes from
+the jar contents but just returns the runtime one (such as openjdk).
+
+Javassist.Loader javadoc explains its limitation on loading java.*
+ / javax.* classes. [*1]
+
+(So, it is not even about "runtime visible/invisible annotations".
+I tried to read android.jar classes using ASM ClassReader [*2] and
+it couldn't find any annotations on FieldNode (and from what I read
+from asm sources, I believe it is by no means bug in ASM).
+
+[*1] http://www.csg.is.titech.ac.jp/~chiba/javassist/html/javassist/Loader.html
+[*2] http://asm.ow2.org/asm33/javadoc/user/org/objectweb/asm/ClassReader.html
 
 
