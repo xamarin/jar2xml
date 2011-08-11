@@ -32,12 +32,12 @@ test-8: 8.xml
 	xmlstarlet c14n 8_.xml > 8.xml || exit 1
 	rm 8_.xml
 
-# These rules are to get diff between 10 and 11.
-test-11: 10.xml 
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-11/android.jar --out=_11.xml --docpath=$(ANDROID_SDK_PATH)/docs/reference || exit 1
-	mono-xmltool --prettyprint _11.xml > _11_.xml || exit 1
-	xmlstarlet c14n _11_.xml > _11.xml || exit 1
-	rm _11_.xml
+# These rules are to get diff between 10 and 13.
+test-13: 10.xml 
+	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-13/android.jar --out=_13.xml --docpath=$(ANDROID_SDK_PATH)/docs/reference || exit 1
+	mono-xmltool --prettyprint _13.xml > _13_.xml || exit 1
+	xmlstarlet c14n _13_.xml > _13.xml || exit 1
+	rm _13_.xml
 
 10.xml:
 	wget --output-document=10.xml "http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=api/10.xml;hb=HEAD" || exit 1

@@ -20,6 +20,8 @@ Difference from AOSP API XML:
 
   This will lead to huge reduction on monodroid/Mono.Android/metadata.
 
+  - Class/@name and constructor/@type are already generic aware.
+
 TODOs:
 
 - some failures on retrieving @Deprecated

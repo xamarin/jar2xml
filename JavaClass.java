@@ -104,7 +104,7 @@ public class JavaClass implements Comparable<JavaClass> {
 			return;
 		Element e = doc.createElement ("constructor");
 		e.setAttribute ("name", getConstructorName (jclass));
-		e.setAttribute ("type", jclass.getName ().replace ('$', '.'));
+		e.setAttribute ("type", getGenericAwareClassName (jclass, true));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
@@ -255,6 +255,15 @@ public class JavaClass implements Comparable<JavaClass> {
 		return sig.toString ();
 	}
 
+	static String getGenericAwareClassName (Class jclass, boolean isFullname)
+	{
+		String qualname = jclass.getName ();
+		String basename = isFullname ? qualname : qualname.substring (jclass.getPackage ().getName ().length () + 1, qualname.length ());
+		String name = basename.replace ("$", ".");
+		String type_params = getTypeParameters (jclass.getTypeParameters ());
+		return name + type_params;
+	}
+
 	public void appendToDocument (Document doc, Element parent)
 	{
 		int mods = jclass.getModifiers ();
@@ -268,10 +277,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				e.setAttribute ("extends", getGenericTypeName (t));
 		}
 
-		String qualname = jclass.getName ();
-		String name = qualname.substring (jclass.getPackage ().getName ().length () + 1, qualname.length ()).replace ("$", ".");
-		String type_params = getTypeParameters (jclass.getTypeParameters ());
-		e.setAttribute ("name", name + type_params);
+		e.setAttribute ("name", getGenericAwareClassName (jclass, false));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
