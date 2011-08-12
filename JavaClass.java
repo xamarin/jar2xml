@@ -145,8 +145,17 @@ public class JavaClass implements Comparable<JavaClass> {
 					e.setAttribute ("value", String.format ("%d", field.getLong (null)));
 				else if (type == "float")
 					e.setAttribute ("value", String.format ("%f", field.getFloat (null)));
-				else if (type == "double")
-					e.setAttribute ("value", String.format ("%f", field.getDouble (null)));
+				else if (type == "double") {
+					double dvalue = field.getDouble (null);
+					String svalue;
+					if (dvalue ==Double.POSITIVE_INFINITY)
+						svalue = "(0.0 / 0.0)"; // see java.lang.Double.
+					else if (dvalue == Double.NEGATIVE_INFINITY)
+						svalue = "(-1.0 / 0.0)"; // see java.lang.Double.
+					else
+						svalue = String.format ("%f", dvalue);
+					e.setAttribute ("value", svalue);
+				}
 				else if (type == "boolean")
 					e.setAttribute ("value", field.getBoolean (null) ? "true" : "false");
 				else if (type == "java.lang.String")
