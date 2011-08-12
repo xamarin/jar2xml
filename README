@@ -43,6 +43,27 @@ It is also implemented as "make test-8"
 
 - retrieve member annotations from javadoc. (See Notes on Annotations described later.)
 
+- Do not skip certain overriden methods. This in JavaClass.java gives
+  equivalent output to AOSP xml, but it's not good:
+
+		if (base_method != null) {
+			int base_mods = base_method.getModifiers ();
+			if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)))
+				continue;
+		}
+
+  This causes GridView.setAdapter() ignored and thus fails to generate
+  valid property. It hides overriden methods.
+
+  I simply commented out, then a bunch of hidden overriden methods
+  appeared. And since we don't handle int->enum conversions on those
+  methods, they simply fail to compile. Maybe fixing above to match
+  existing format is a good-enough compromization.
+
+  Another notable thing is that AbsListView.setAdapter() does not
+  exist in api-4.xml. It is likely because abstract methods are
+  ignored (it is abstract, though that fact does not appear on
+  android javadoc).
 
 * Notes on Annotations
 

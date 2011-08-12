@@ -366,6 +366,10 @@ public class JavaClass implements Comparable<JavaClass> {
 				}
 							
 				if (base_method != null) {
+					if (Modifier.isAbstract (mmods))
+						continue;
+					// FIXME: this causes GridView.setAdapter() skipped.
+					// Removing this entire block however results in more confusion. See README.
 					int base_mods = base_method.getModifiers ();
 					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)))
 						continue;
