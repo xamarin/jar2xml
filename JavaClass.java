@@ -146,12 +146,20 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (type == "float")
 					e.setAttribute ("value", String.format ("%f", field.getFloat (null)));
 				else if (type == "double") {
+					// see java.lang.Double constants.
 					double dvalue = field.getDouble (null);
 					String svalue;
-					if (dvalue ==Double.POSITIVE_INFINITY)
-						svalue = "(0.0 / 0.0)"; // see java.lang.Double.
+					
+					if (dvalue == Double.MAX_VALUE)
+						svalue = "1.7976931348623157E308";
+					else if (dvalue == Double.MIN_VALUE)
+						svalue = "4.9E-324";
+					else if (Double.isNaN (dvalue))
+						svalue = "(0.0 / 0.0)";
+					else if (dvalue == Double.POSITIVE_INFINITY)
+						svalue = "(1.0 / 0.0)";
 					else if (dvalue == Double.NEGATIVE_INFINITY)
-						svalue = "(-1.0 / 0.0)"; // see java.lang.Double.
+						svalue = "(-1.0 / 0.0)";
 					else
 						svalue = String.format ("%f", dvalue);
 					e.setAttribute ("value", svalue);
