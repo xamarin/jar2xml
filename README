@@ -1,7 +1,8 @@
 jar2xml is a tool to extract API information from a java archive
 and associated documentation.  The information is stored in XML format.
 
-Easy comparison:
+
+* Easy comparison
 
 	$ java -jar jar2xml.jar --jar=/home/atsushi/android-sdk-linux_x86/platforms/android-8/android.jar --out=_8.xml --docpath=/home/atsushi/android-sdk-linux_x86/docs/reference
 	$ mono-xmltool --prettyprint 8.xml > 8_.xml
@@ -12,22 +13,38 @@ Easy comparison:
 
 It is also implemented as "make test-8"
 
-Difference from AOSP API XML:
 
-- generics on interface name should contain arguments part (i.e. <Foo>).
-  e.g. "android.accounts.AccountManagerCallback" should be 
-       "android.accounts.AccountManagerCallback<V>"
+* Difference from AOSP API XML
+
+- Type parameters on Class and Method are now explicitly written as:
+  <typeParameters>    <!-- if any -->
+    <typeParameter name="...">
+      <genericConstraints>    <!-- if any -->
+        <genericConstraint type="..."></genericConstraint>
+      </genericConstraints>
+    </typeParameter>
+  </typeParameters>
+
+  see e.g. android.accounts.AccountManagerCallback<V>
 
   This will lead to huge reduction on monodroid/Mono.Android/metadata.
 
-  - Class/@name and constructor/@type are already generic aware.
+  There are some cases that we dare output type parameters embedded
+  into type name (basically those in XML attributes):
+  
+  - class/@extends
+  - implements/@name
+  - field/@type
+  - genericConstraint/@type (see above)
+  - exception/@type (it would hardly happen though)
 
-TODO:
+
+* TODO
 
 - retrieve member annotations from javadoc. (See Notes on Annotations described later.)
 
 
-Notes on Annotations:
+* Notes on Annotations
 
 Current implementation uses java.lang.reflect API to get member
 annotations, but it won't work as expected.

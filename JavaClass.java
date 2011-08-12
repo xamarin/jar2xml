@@ -29,6 +29,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -104,7 +105,7 @@ public class JavaClass implements Comparable<JavaClass> {
 			return;
 		Element e = doc.createElement ("constructor");
 		e.setAttribute ("name", getConstructorName (jclass));
-		e.setAttribute ("type", getGenericAwareClassName (jclass, true));
+		e.setAttribute ("type", getClassName (jclass, true));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
@@ -164,8 +165,11 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
 			return;
 		Element e = doc.createElement ("method");
-		String type_params = getTypeParameters (method.getTypeParameters ());
-		e.setAttribute ("name", method.getName () + type_params);
+		e.setAttribute ("name", method.getName ());
+		Element typeParameters = getTypeParametersNode (doc, method.getTypeParameters ());
+		if (typeParameters != null)
+			e.appendChild (typeParameters);
+
 		e.setAttribute ("return", getGenericTypeName (method.getGenericReturnType ()));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
@@ -180,8 +184,8 @@ public class JavaClass implements Comparable<JavaClass> {
 		sortClasses (excTypes);
 		for (Class exc : excTypes) {
 			Element exe = doc.createElement ("exception");
-			exe.setAttribute ("name", exc.getSimpleName ());
-			exe.setAttribute ("type", exc.getName ());
+			exe.setAttribute ("name", getClassName (exc, false));
+			exe.setAttribute ("type", getClassName (exc, true));
 			exe.appendChild (doc.createTextNode ("\n"));
 			e.appendChild (exe);
 		}
@@ -195,7 +199,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		java.util.Arrays.sort (classes, new java.util.Comparator () {
 			public int compare (Object o1, Object o2)
 			{
-				return ((Class) o1).getName ().compareTo (((Class) o2).getName ());
+				return ((Class) o1).getSimpleName ().compareTo (((Class) o2).getSimpleName ());
 			}
 			public boolean equals (Object obj)
 			{
@@ -243,6 +247,38 @@ public class JavaClass implements Comparable<JavaClass> {
 		type_params.append (">");
 		return type_params.toString ();
 	}
+	
+	static Element getTypeParametersNode (Document doc,  TypeVariable<Method>[] tps)
+	{
+		if (tps.length == 0)
+			return null;
+		Element tps_elem = doc.createElement ("typeParameters");
+		for (TypeVariable<?> tp : tps) {
+			Element tp_elem = doc.createElement ("typeParameter");
+			tp_elem.setAttribute ("name", tp.getName ());
+			if (tp.getBounds ().length != 1 || tp.getBounds () [0].equals (Object.class)) {
+				Element tcs_elem = doc.createElement ("genericConstraints");
+				for (Type tc : tp.getBounds ()) {
+					if (tc.equals (Object.class))
+						continue;
+					Element tc_elem = doc.createElement ("genericConstraint");
+					Class tcc = tc instanceof Class ? (Class) tc : null;
+					ParameterizedType pt = tc instanceof ParameterizedType ? (ParameterizedType) tc : null;
+					if (tcc != null)
+						tc_elem.setAttribute ("type", tcc.getName ());
+					else if (pt != null)
+						tc_elem.setAttribute ("type", pt.toString ()); // FIXME: this is not strictly compliant to the ParameterizedType API (no assured tostring() behavior to return type name)
+					else
+						throw new UnsupportedOperationException ("Type is " + tc.getClass ());
+					tcs_elem.appendChild (tc_elem);
+				}
+				if (tcs_elem != null)
+				tp_elem.appendChild (tcs_elem);
+			}
+			tps_elem.appendChild (tp_elem);
+		}
+		return tps_elem;
+	}
 
 	String getSignature (Method method)
 	{
@@ -255,13 +291,11 @@ public class JavaClass implements Comparable<JavaClass> {
 		return sig.toString ();
 	}
 
-	static String getGenericAwareClassName (Class jclass, boolean isFullname)
+	static String getClassName (Class jclass, boolean isFullname)
 	{
 		String qualname = jclass.getName ();
 		String basename = isFullname ? qualname : qualname.substring (jclass.getPackage ().getName ().length () + 1, qualname.length ());
-		String name = basename.replace ("$", ".");
-		String type_params = getTypeParameters (jclass.getTypeParameters ());
-		return name + type_params;
+		return basename.replace ("$", ".");
 	}
 
 	public void appendToDocument (Document doc, Element parent)
@@ -277,11 +311,16 @@ public class JavaClass implements Comparable<JavaClass> {
 				e.setAttribute ("extends", getGenericTypeName (t));
 		}
 
-		e.setAttribute ("name", getGenericAwareClassName (jclass, false));
+		e.setAttribute ("name", getClassName (jclass, false));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
+
+		Element typeParameters = getTypeParametersNode (doc, jclass.getTypeParameters ());
+		if (typeParameters != null)
+			e.appendChild (typeParameters);
+
 		setDeprecatedAttr (e, jclass.getDeclaredAnnotations ());
 		Type [] ifaces = jclass.getGenericInterfaces ();
 		sortTypes (ifaces);
