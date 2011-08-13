@@ -65,6 +65,17 @@ It is also implemented as "make test-8"
   ignored (it is abstract, though that fact does not appear on
   android javadoc).
 
+  They are temporarily workarounded by Mono.Android/metadata.
+
+- Some classes do not appear on the output xml, such as:
+  - java.lang.AbstractStringBuilder
+  - java.lang.Deprecated
+
+- Some classes exists in the output xml but not in the dll:
+  - android.database.ContentObservable (derived from Observable<ContentObserver>)
+  - android.net.NetworkInfo.State (enum type)
+
+
 * Notes on Annotations
 
 Current implementation uses java.lang.reflect API to get member
