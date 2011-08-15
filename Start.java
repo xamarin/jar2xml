@@ -42,13 +42,16 @@ public class Start {
 	public static void main (String[] args)
 	{
 		String docs = null;
+		String annots = null;
 		String jar_path = null;
 		String out_path = null;
-		String usage = "Usage: jar2xml --jar=<jarfile> --out=<file> [--docpath=<javadocs>]";
+		String usage = "Usage: jar2xml --jar=<jarfile> --out=<file> [--docpath=<javadocs>] [--annotations=<xmlfile>]";
 
 		for (String arg : args) {
 			if (arg.startsWith ("--docpath=")) {
 				docs = arg.substring (10);
+			} else if (arg.startsWith ("--annotations=")) {
+				annots = arg.substring (14);
 			} else if (arg.startsWith ("--jar=")) {
 				jar_path = arg.substring (6);
 			} else if (arg.startsWith ("--out=")) {
@@ -73,6 +76,8 @@ public class Start {
 		}
 
 		try {
+			if (annots != null)
+				AndroidDocScraper.loadXml (annots);
 			if (docs != null)
 				JavaClass.addDocScraper (new AndroidDocScraper (new File (docs)));
 		} catch (Exception e) {

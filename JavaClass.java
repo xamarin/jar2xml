@@ -34,6 +34,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -43,10 +44,14 @@ import org.w3c.dom.Element;
 public class JavaClass implements Comparable<JavaClass> {
 
 	private Class jclass;
+	private List<String> deprecatedFields;
+	private List<String> deprecatedMethods;
 
 	public JavaClass (Class jclass)
 	{
 		this.jclass = jclass;
+		deprecatedFields = AndroidDocScraper.getDeprecatedFields (jclass);
+		deprecatedMethods = AndroidDocScraper.getDeprecatedMethods (jclass);
 	}
 
 	public int compareTo (JavaClass jc)
@@ -453,6 +458,11 @@ public class JavaClass implements Comparable<JavaClass> {
 	void setDeprecatedAttr (Element elem, Annotation[] annotations)
 	{
 		boolean isDeprecated = false;
+		
+		// by reference document (they may be excessive on old versions though)
+		isDeprecated = deprecatedFields != null && deprecatedFields.indexOf (elem.getAttribute ("name")) >= 0;
+
+		// by annotations (they might not exist though)
 		for (Annotation a : annotations)
 			if (a instanceof java.lang.Deprecated)
 				isDeprecated = true;

@@ -27,6 +27,9 @@ package jar2xml;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.regex.*;
+import java.util.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 
 public class AndroidDocScraper implements IDocScraper {
 
@@ -101,5 +104,56 @@ public class AndroidDocScraper implements IDocScraper {
 		}
 
 		return new String [0];
+	}
+	
+	static Map<String,List<String>> deprecatedFields;
+	static Map<String,List<String>> deprecatedMethods;
+	
+	public static void loadXml (String filename)
+	{
+		try {
+
+			Document doc = DocumentBuilderFactory.newInstance ().newDocumentBuilder ().parse (filename);
+			deprecatedFields = new HashMap<String,List<String>> ();
+			deprecatedMethods = new HashMap<String,List<String>> ();
+			NodeList files = doc.getDocumentElement ().getElementsByTagName ("file");
+			for (int i = 0; i < files.getLength (); i++) {
+				Element file = (Element) files.item (i);
+				ArrayList<String> f = new ArrayList<String> ();
+				deprecatedFields.put (file.getAttribute ("name"), f);
+				NodeList fields = file.getElementsByTagName ("field");
+				for (int j = 0; j < fields.getLength (); j++)
+					f.add (fields.item (j).getTextContent ());
+
+				ArrayList<String> m = new ArrayList<String> ();
+				deprecatedMethods.put (file.getAttribute ("name"), m);
+				NodeList methods = file.getElementsByTagName ("method");
+				for (int j = 0; j < methods.getLength (); j++)
+					m.add (methods.item (j).getTextContent ());
+			}
+		
+		} catch (Exception ex) {
+			System.err.println ("Annotations parser error: " + ex);
+		}
+	}
+	
+	public static List<String> getDeprecatedFields (Class cls)
+	{
+		if (deprecatedFields == null)
+			return null;
+		String name = cls.getName ();
+		String pkg = cls.getPackage ().getName ();
+		name = pkg.replace (".", "/") + "/" + name.substring (pkg.length () + 1).replace ("$", "."); // foo/bar/Baz.Nested
+		return deprecatedFields.get (name);
+	}
+	
+	public static List<String> getDeprecatedMethods (Class cls)
+	{
+		if (deprecatedMethods == null)
+			return null;
+		String name = cls.getName ();
+		String pkg = cls.getPackage ().getName ();
+		name = pkg.replace (".", "/") + "/" + name.substring (pkg.length () + 1).replace ("$", "."); // foo/bar/Baz.Nested
+		return deprecatedMethods.get (name);
 	}
 }

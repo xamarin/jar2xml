@@ -5,6 +5,8 @@ all: $(TARGET)
 clean:
 	-rm -rf obj
 	-rm $(TARGET)
+	-rm -rf tmpout
+	-rm -rf annotations
 
 sources = \
 	AndroidDocScraper.java \
@@ -20,8 +22,8 @@ $(TARGET): $(sources)
 	javac -g -d obj $(sources)
 	jar cfe "$@" jar2xml.Start -C obj/ .
 
-test-8: 8.xml
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-8/android.jar --out=_8.xml --docpath=$(ANDROID_SDK_PATH)/docs/reference || exit 1
+test-8: 8.xml annotations/8.xml
+	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-8/android.jar --out=_8.xml --docpath=$(ANDROID_SDK_PATH)/docs/reference --annotations=annotations/8.xml || exit 1
 	mono-xmltool --prettyprint _8.xml > _8_.xml || exit 1
 	xmlstarlet c14n _8_.xml > _8.xml || exit 1
 	rm _8_.xml
@@ -33,8 +35,8 @@ test-8: 8.xml
 	rm 8_.xml
 
 # These rules are to get diff between 10 and 13.
-test-13: 10.xml 
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-13/android.jar --out=_13.xml --docpath=$(ANDROID_SDK_PATH)/docs/reference || exit 1
+test-13: 10.xml annotations/13.xml
+	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-13/android.jar --out=_13.xml --docpath=$(ANDROID_SDK_PATH)/docs/reference --annotations=annotations/13.xml || exit 1
 	mono-xmltool --prettyprint _13.xml > _13_.xml || exit 1
 	xmlstarlet c14n _13_.xml > _13.xml || exit 1
 	rm _13_.xml
@@ -45,3 +47,20 @@ test-13: 10.xml
 	xmlstarlet c14n 10_.xml > 10.xml || exit 1
 	rm 10_.xml
 
+annotations/8.xml: scraper.exe tmpout/8-deprecated-members.xml
+	mkdir -p annotations
+	mono --debug scraper.exe tmpout/8-deprecated-members.xml > annotations/8.xml
+
+tmpout/8-deprecated-members.xml : scraper-main.sh scraper-collector.sh
+	mkdir -p tmpout
+	bash scraper-main.sh > tmpout/8-deprecated-members.xml
+
+annotations/13.xml: scraper.exe tmpout/13-deprecated-members.xml
+	mkdir -p annotations
+	mono --debug scraper.exe tmpout/13-deprecated-members.xml > annotations/13.xml
+
+tmpout/13-deprecated-members.xml : scraper-main.sh scraper-collector.sh
+	mkdir -p tmpout
+	bash scraper-main.sh > tmpout/13-deprecated-members.xml
+scraper.exe : scraper.cs
+	mcs -debug scraper.cs

@@ -86,9 +86,10 @@ annotations. For example, java.net.HttpURLConnection#HTTP_SERVER_ERROR
 should be annotated with @Deprecated, but it isn't.
 On the other hand, class annotations are alive.
 (e.g. java/security/Certificate.class)
+I guess is that AOSP uses proguard which strips member annotations.
 
-The reason why we somehow retrieved @Deprecated on
-HttpURLConnection#HTTP_SERVER_ERROR is likely that
+The reason why we can somehow retrieve @Deprecated on
+HttpURLConnection#HTTP_SERVER_ERROR by jar2xml is likely that
 URLClassLoader.getClass() actually does not load java.* classes from
 the jar contents but just returns the runtime one (such as openjdk).
 
@@ -99,6 +100,12 @@ Javassist.Loader javadoc explains its limitation on loading java.*
 I tried to read android.jar classes using ASM ClassReader [*2] and
 it couldn't find any annotations on FieldNode (and from what I read
 from asm sources, I believe it is by no means bug in ASM).
+
+I have added separate doc scraper, which uses xmllint (to xmlize html docs)
+and xmlstarlet (for convenient XPath query). Run "make annotations/13.xml" 
+for instance (should be available to all versions, I'm just lazy to hack
+makefiles before confirming that it's all good).
+
 
 [*1] http://www.csg.is.titech.ac.jp/~chiba/javassist/html/javassist/Loader.html
 [*2] http://asm.ow2.org/asm33/javadoc/user/org/objectweb/asm/ClassReader.html
