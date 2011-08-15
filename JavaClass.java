@@ -144,6 +144,8 @@ public class JavaClass implements Comparable<JavaClass> {
 					e.setAttribute ("value", String.format ("%d", field.getInt (null)));
 				else if (type == "byte")
 					e.setAttribute ("value", String.format ("%d", field.getByte (null)));
+				else if (type == "char")
+					e.setAttribute ("value", String.format ("%d", (int) field.getChar (null)));
 				else if (type == "short")
 					e.setAttribute ("value", String.format ("%d", field.getShort (null)));
 				else if (type == "long")
@@ -174,7 +176,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (type == "java.lang.String")
 					e.setAttribute ("value", "\"" + ((String) field.get (null)).replace ("\\", "\\\\") + "\"");
 			} catch (Exception exc) {
-				System.err.println ("Error accessing constant field " + field.getName () + " value for class " + getName ());
+				System.err.println ("Error accessing constant field " + field.getName () + " value for class " + getName () + " : " + exc);
 			}
 		}
 		e.appendChild (doc.createTextNode ("\n"));
@@ -324,8 +326,8 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		int mods = jclass.getModifiers ();
 
-		Element e = doc.createElement (jclass.isInterface () ? "interface" : "class");
-		if (!jclass.isInterface ()) {
+		Element e = doc.createElement (jclass.isInterface () && !jclass.isAnnotation () ? "interface" : "class");
+		if (!jclass.isInterface () || jclass.isAnnotation ()) {
 			// FIXME: at some stage we'd like to use generic name.
 			//Type t = jclass.getGenericSuperclass ();
 			//if (t != null)
