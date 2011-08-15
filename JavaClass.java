@@ -326,9 +326,13 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		Element e = doc.createElement (jclass.isInterface () ? "interface" : "class");
 		if (!jclass.isInterface ()) {
-			Type t = jclass.getGenericSuperclass ();
+			// FIXME: at some stage we'd like to use generic name.
+			//Type t = jclass.getGenericSuperclass ();
+			//if (t != null)
+			//	e.setAttribute ("extends", getGenericTypeName (t));
+			Class t = jclass.getSuperclass ();
 			if (t != null)
-				e.setAttribute ("extends", getGenericTypeName (t));
+				e.setAttribute ("extends", getClassName (t, true));
 		}
 
 		e.setAttribute ("name", getClassName (jclass, false));
