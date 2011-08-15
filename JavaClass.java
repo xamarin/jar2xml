@@ -323,8 +323,6 @@ public class JavaClass implements Comparable<JavaClass> {
 	public void appendToDocument (Document doc, Element parent)
 	{
 		int mods = jclass.getModifiers ();
-		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
-			return;
 
 		Element e = doc.createElement (jclass.isInterface () ? "interface" : "class");
 		if (!jclass.isInterface ()) {
@@ -337,7 +335,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
-		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
+		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : Modifier.isProtected (mods) ? "protected" : "");
 
 		Element typeParameters = getTypeParametersNode (doc, jclass.getTypeParameters ());
 		if (typeParameters != null)
