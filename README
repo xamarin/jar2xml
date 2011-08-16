@@ -102,6 +102,15 @@ It is also implemented as "make test-8" as well as "make test-13".
   - android.database.ContentObservable (derived from Observable<ContentObserver>)
   - android.net.NetworkInfo.State (enum type)
 
+- Some fields seem to be incorrectly marked as constant. For example,
+  android.os.Build.TIME is not a constant, but since the field.getLong()
+  returns 0, it is set as 0 (and it does not return null for get()).
+
+- Doc scraper still misses some parameter names
+  e.g. android.text.method.ScrollingMovementMethod.onKeyUp()
+  This matters when api-fixup is involved (it matches nodes by parameter
+  names and then it dismisses the target nodes!).
+
 
 * Notes on Annotations
 
