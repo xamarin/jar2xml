@@ -175,8 +175,11 @@ public class JavaClass implements Comparable<JavaClass> {
 				}
 				else if (type == "boolean")
 					e.setAttribute ("value", field.getBoolean (null) ? "true" : "false");
-				else if (type == "java.lang.String")
-					e.setAttribute ("value", "\"" + (String) field.get (null).replace ("\\", "\\\\") + "\"");
+				else if (type == "java.lang.String") {
+					String value = (String) field.get (null);
+					if (value != null)
+						e.setAttribute ("value", "\"" + value.replace ("\\", "\\\\") + "\"");
+				}
 			} catch (Exception exc) {
 				System.err.println ("Error accessing constant field " + field.getName () + " value for class " + getName () + " : " + exc);
 			}
