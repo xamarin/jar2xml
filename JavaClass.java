@@ -322,6 +322,9 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	static String getClassName (Class jclass, boolean isFullname)
 	{
+		if (jclass.isArray ())
+			return getClassName (jclass.getComponentType (), isFullname) + "[]";
+
 		String qualname = jclass.getName ();
 		String basename = isFullname ? qualname : qualname.substring (jclass.getPackage ().getName ().length () + 1, qualname.length ());
 		return basename.replace ("$", ".");
