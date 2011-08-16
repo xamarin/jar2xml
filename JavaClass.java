@@ -128,7 +128,9 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		Element e = doc.createElement ("field");
 		e.setAttribute ("name", field.getName ());
-		e.setAttribute ("type", getGenericTypeName (field.getGenericType ()));
+		// FIXME: at some stage we'd like to use generic name.
+		//e.setAttribute ("type", getGenericTypeName (field.getGenericType ()));
+		e.setAttribute ("type", getClassName (field.getType (), true));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		if (Modifier.isAbstract (mods))
@@ -174,7 +176,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (type == "boolean")
 					e.setAttribute ("value", field.getBoolean (null) ? "true" : "false");
 				else if (type == "java.lang.String")
-					e.setAttribute ("value", "\"" + ((String) field.get (null)).replace ("\\", "\\\\") + "\"");
+					e.setAttribute ("value", "\"" + (String) field.get (null).replace ("\\", "\\\\") + "\"");
 			} catch (Exception exc) {
 				System.err.println ("Error accessing constant field " + field.getName () + " value for class " + getName () + " : " + exc);
 			}
@@ -348,11 +350,15 @@ public class JavaClass implements Comparable<JavaClass> {
 			e.appendChild (typeParameters);
 
 		setDeprecatedAttr (e, jclass.getDeclaredAnnotations ());
-		Type [] ifaces = jclass.getGenericInterfaces ();
+		// FIXME: at some stage we'd like to use generic name.
+		//Type [] ifaces = jclass.getGenericInterfaces ();
+		Class [] ifaces = jclass.getInterfaces ();
 		sortTypes (ifaces);
-		for (Type iface : ifaces) {
+		for (Class iface : ifaces) {
 			Element iface_elem = doc.createElement ("implements");
-			iface_elem.setAttribute ("name", getGenericTypeName (iface));
+			// FIXME: at some stage we'd like to use generic name.
+			//iface_elem.setAttribute ("name", getGenericTypeName (iface));
+			iface_elem.setAttribute ("name", getClassName (iface, true));
 			iface_elem.appendChild (doc.createTextNode ("\n"));
 			e.appendChild (iface_elem);
 		}
