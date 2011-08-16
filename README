@@ -84,9 +84,19 @@ It is also implemented as "make test-8" as well as "make test-13".
 
   They are temporarily workarounded by Mono.Android/metadata.
 
-- Some classes do not appear on the output xml, such as:
-  - java.lang.AbstractStringBuilder
-  - java.lang.Deprecated
+- Annotation such as java.lang.Deprecated do not seem to exist
+  in android.jar. That includes, types themselves.
+  java.lang.annotation types suffer from this.
+
+- java.lang.AbstractStringBuilder exposes another issue that
+  interface members on non-public types are returned by
+  class#getDeclaredMethods() while they are *not* declared.
+  
+  Those methods (or those AbstractStringBuilder methods) are excluded by
+  checking special modifier 0x1000 (4096).
+  Also this involves check for derived methods (many overriden methods are
+  excluded, but this brings another check to *not* exclude methods when
+  the corresponding base methods are excluded).
 
 - Some classes exists in the output xml but not in the dll:
   - android.database.ContentObservable (derived from Observable<ContentObserver>)

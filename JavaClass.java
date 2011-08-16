@@ -375,6 +375,22 @@ public class JavaClass implements Comparable<JavaClass> {
 		Map<String, Method> methods = new HashMap <String, Method> ();
 		for (Method method : jclass.getDeclaredMethods ()) {
 			int mmods = method.getModifiers ();
+
+			if (!Modifier.isPublic (mods) && (mmods & 0x1000) != 0) {
+				System.err.println ("Skipped doubtful method " + method);
+				continue; // Some non-standard flag seems to detect non-declared method on the source e.g. AbstractStringBuilder.append(char)
+			}
+
+			if (!Modifier.isPublic (method.getReturnType ().getModifiers ()))
+				continue;
+			boolean nonPublic = false;
+			Class [] ptypes = method.getParameterTypes ();
+			for (int pidx = 0; pidx < ptypes.length; pidx++)
+				if (!Modifier.isPublic (ptypes [pidx].getModifiers ()))
+					nonPublic = true;
+			if (nonPublic)
+				continue;
+
 			if (base_class != null && !Modifier.isFinal (mmods)) {
 				Method base_method = null;
 				Class ancestor = base_class;
@@ -392,7 +408,8 @@ public class JavaClass implements Comparable<JavaClass> {
 					// FIXME: this causes GridView.setAdapter() skipped.
 					// Removing this entire block however results in more confusion. See README.
 					int base_mods = base_method.getModifiers ();
-					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)))
+					int base_decl_class_mods = base_method.getDeclaringClass ().getModifiers (); // This is to not exclude methods that are excluded in the base type by modifiers (e.g. some AbstractStringBuilder methods)
+					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)) && Modifier.isPublic (base_decl_class_mods))
 						continue;
 				}
 			}
