@@ -10,7 +10,6 @@ public class Scraper
 {
 	public static int Main (string [] args)
 	{
-		var extraPath = Path.Combine (Environment.GetEnvironmentVariable ("ANDROID_SDK_PATH"), "docs/reference") + "/";
 		var doc = new XmlDocument ();
 		doc.Load (args [0]);
 		Console.WriteLine ("<deprecated>");
@@ -37,7 +36,7 @@ public class Scraper
 			}
 			if (output.Length == 0)
 				continue;
-			string name = file.GetAttribute ("name").Substring (extraPath.Length);
+			string name = file.GetAttribute ("name");
 			name = name.Substring (0, name.Length - 5); // .html
 			Console.WriteLine ("<file name='{0}'>\n{1}</file>", name, output);
 		}

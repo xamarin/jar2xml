@@ -1,0 +1,7 @@
+13: http://dl-ssl.google.com/android/repository/docs-3.2_r01-linux.zip
+12: http://dl-ssl.google.com/android/repository/docs-3.1_r01-linux.zip
+11: http://dl-ssl.google.com/android/repository/docs-3.0_r01-linux.zip
+10: ?
+09: http://dl-ssl.google.com/android/repository/docs-2.3_r01-linux.zip
+08: http://dl-ssl.google.com/android/repository/docs-2.2_r01-linux.zip
+07: http://dl-ssl.google.com/android/repository/docs-2.1_r01-linux.zip

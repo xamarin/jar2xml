@@ -13,8 +13,11 @@ and associated documentation.  The information is stored in XML format.
 
 	- jar2xml : the main converter to generate the primary target xmls.
 	- scraper.exe : annotation doc scraper to generate annotations/*.xml.
+	  scraper-*.sh : shells used for scraper input. They are piped.
 
-* Easy comparison
+* <del>Easy</del> comparison
+
+well, now it's getting much more complicated than it used to be like below...
 
 	$ java -jar jar2xml.jar --jar=/home/atsushi/android-sdk-linux_x86/platforms/android-8/android.jar --out=_8.xml --docpath=/home/atsushi/android-sdk-linux_x86/docs/reference
 	$ mono-xmltool --prettyprint 8.xml > 8_.xml
@@ -23,7 +26,8 @@ and associated documentation.  The information is stored in XML format.
 	$ xmlstarlet c14n _8_.xml > _8.xml
 	$ diff -u 8.xml _8.xml
 
-It is also implemented as "make test-8" as well as "make test-13".
+It is now implemented as "make test-8" as well as "make test-13" with more
+detailed arguments. You should rather check Makefile to see what it does.
 
 
 * Difference from AOSP API XML
@@ -57,9 +61,6 @@ It is also implemented as "make test-8" as well as "make test-13".
 
 * TODO
 
-- Move methods in non-public base type to the public derived type e.g.
-  AbstractStringBuilder.append() should move to StringBuffer and StringBuilder.
-
 - Do not skip certain overriden methods. This in JavaClass.java gives
   equivalent output to AOSP xml, but it's not good:
 
@@ -88,7 +89,21 @@ It is also implemented as "make test-8" as well as "make test-13".
   in android.jar. That includes, types themselves.
   java.lang.annotation types suffer from this.
 
-- java.lang.AbstractStringBuilder exposes another issue that
+  I find it almost desparate and the only solution I can think of is
+  to build AOSP android.jar or some equivalence that does *not* strip
+  those annotations off, *for each platform version*.
+  That sounds so time-eater.
+
+  The AOSP API document is generated as out/target/common/obj/PACKAGING/android_jar_intermediaries/public_api.xml (at that state there still must be annotations, or this xml should not contain annotation information at all).
+  Also, 
+  out/target/common/obj/JAVA_LIBRARIES/framework_intermediaries and
+  out/target/common/obj/JAVA_LIBRARIES/core_intermediaries
+  contains debug jars that still seem to hold annotations.
+
+  This is from the latest AOSP build (as of Aug.17, 2011). I'm not sure
+  if this applies to older versions.
+
+- java.lang.AbstractStringBuilder exposes an issue that
   interface members on non-public types are returned by
   class#getDeclaredMethods() while they are *not* declared.
   
@@ -98,18 +113,12 @@ It is also implemented as "make test-8" as well as "make test-13".
   excluded, but this brings another check to *not* exclude methods when
   the corresponding base methods are excluded).
 
-- Some classes exists in the output xml but not in the dll:
-  - android.database.ContentObservable (derived from Observable<ContentObserver>)
-  - android.net.NetworkInfo.State (enum type)
-
 - Some fields seem to be incorrectly marked as constant. For example,
   android.os.Build.TIME is not a constant, but since the field.getLong()
   returns 0, it is set as 0 (and it does not return null for get()).
 
-- Doc scraper still misses some parameter names
-  e.g. android.text.method.ScrollingMovementMethod.onKeyUp()
-  This matters when api-fixup is involved (it matches nodes by parameter
-  names and then it dismisses the target nodes!).
+  java.io.File.pathSeparatorChar has the same problem, but it is worse;
+  it returns non-zero value so we cannot depend on the value.
 
 
 * Notes on Annotations
@@ -147,3 +156,20 @@ makefiles before confirming that it's all good).
 [*2] http://asm.ow2.org/asm33/javadoc/user/org/objectweb/asm/ClassReader.html
 
 
+* Notes on per-version doc scraping
+
+We used to scrape only reference for the latest API which was problematic.
+Now we have version-aware scraper and resolved the issue described below.
+
+<historical>
+  Doc scraper still misses some parameter names
+  e.g. android.text.method.ScrollingMovementMethod.onKeyUp()
+  This matters when api-fixup is involved (it matches nodes by parameter
+  names and then it dismisses the target nodes!).
+
+  Actually this is not going to be very good; there are some methods
+  that are removed in the latest API (the example method above is exactly
+  the case). We'll have to sort out some alternative approach.
+  A possible approach is to checkout API docs for *every* version (from
+  AOSP).
+</historical>

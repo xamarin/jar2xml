@@ -1,8 +1,16 @@
+#!/bin/bash
 
-echo "<deprecated>"
-for f in `find $ANDROID_SDK_PATH/docs/reference -name *.html` 
+if [ "$1" ]; then
+	export docpath="$1"
+else
+	export docpath="$ANDROID_SDK_PATH/docs/reference"
+fi
+
+echo "<deprecated basepath='$docpath'>"
+for f in `find $docpath -name *.html` 
 do
-	echo "<file name='$f'>"
+	export len=`expr length "$docpath" + 1`
+	echo "<file name='${f:$len}'>"
 	echo "<fields>"
 	xmllint --html --xmlout $f 2>/dev/null | xmlstarlet sel -t -c "//p[@class='caution']/../../h4[@class='jd-details-title']/text()"
 	echo "</fields>"
