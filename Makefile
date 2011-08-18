@@ -29,7 +29,7 @@ scraper.exe : scraper.cs
 # test API levels
 
 test-8: docs-2.2_r01-linux 8.xml annotations/8.xml
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-8/android.jar --out=_8.xml --docpath=docs-08/reference --annotations=annotations/8.xml || exit 1
+	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-8/android.jar --out=_8.xml --docpath=docs-2.2_r01-linux/reference --annotations=annotations/8.xml || exit 1
 	mono-xmltool --prettyprint _8.xml > _8_.xml || exit 1
 	xmlstarlet c14n _8_.xml > _8.xml || exit 1
 	rm _8_.xml

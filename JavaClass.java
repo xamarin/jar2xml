@@ -74,7 +74,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		return null;
 	}
 
-	void appendParameters (String name, Type[] types, boolean isVarArgs, Document doc, Element parent)
+	void appendParameters (String name, Type[] types, int typeOffset, boolean isVarArgs, Document doc, Element parent)
 	{
 		if (types == null || types.length == 0)
 			return;
@@ -82,7 +82,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		String[] names = getParameterNames (name, types, isVarArgs);
 		
 		int cnt = 0;
-		for (int i = 0; i < types.length; i++) {
+		for (int i = typeOffset; i < types.length; i++) {
 			Element e = doc.createElement ("parameter");
 			e.setAttribute ("name", names == null ? "p" + i : names [i]);
 			String type = getGenericTypeName (types [i]);
@@ -115,9 +115,39 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, ctor.getDeclaredAnnotations ());
-		appendParameters (parent.getAttribute ("name"), ctor.getGenericParameterTypes (), ctor.isVarArgs (), doc, e);
+		
+		appendParameters (parent.getAttribute ("name"), ctor.getGenericParameterTypes (), getConstructorParameterOffset (ctor), ctor.isVarArgs (), doc, e);
 		e.appendChild (doc.createTextNode ("\n"));
 		parent.appendChild (e);
+	}
+	
+	int getConstructorParameterOffset (Constructor ctor)
+	{
+		if (Modifier.isStatic (jclass.getModifiers ()))
+			return 0; // this has nothing to do with static class
+
+		Type [] params = ctor.getGenericParameterTypes ();
+		if (params.length > 0 && params [0].equals (jclass.getDeclaringClass ()))
+			return 1;
+		return 0;
+/*
+		int offset = 0;
+		Class cls = jclass.getDeclaringClass ();
+		int nest = 0;
+		while (cls != null) {
+			nest++;
+			cls = cls.getDeclaringClass ();
+		}
+		if (nest <= params.length) {
+			cls = jclass.getDeclaringClass ();
+			for (nest--; nest >= 0; nest--, cls = cls.getDeclaringClass ()) {
+				if (params [nest].equals (cls))
+					offset++;
+				break; // this does not seem to loop
+			}
+		}
+		return offset;
+*/
 	}
 
 	void appendField (Field field, Document doc, Element parent)
@@ -208,7 +238,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("synchronized", Modifier.isSynchronized (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, method.getDeclaredAnnotations ());
-		appendParameters (method.getName (), method.getGenericParameterTypes (), method.isVarArgs (), doc, e);
+		appendParameters (method.getName (), method.getGenericParameterTypes (), 0, method.isVarArgs (), doc, e);
 
 		Class [] excTypes = method.getExceptionTypes ();
 		sortClasses (excTypes);
