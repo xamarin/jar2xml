@@ -126,6 +126,11 @@ detailed arguments. You should rather check Makefile to see what it does.
 
   This likely has to be resolved by bytecode engineering (such as ASM).
 
+- There are some classes that have extraneous "CompareTo(Object)" method
+  - Android.Net.Uri, 
+- In some classes, ToString() override is missing:
+  - Android.Net.Uri
+
 
 * Notes on Annotations
 

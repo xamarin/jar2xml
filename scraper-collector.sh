@@ -15,7 +15,7 @@ do
 	xmllint --html --xmlout $f 2>/dev/null | xmlstarlet sel -t -c "//p[@class='caution']/../../h4[@class='jd-details-title']/text()"
 	echo "</fields>"
 	echo "<methods>"
-	xmllint --html --xmlout $f 2>/dev/null | xmlstarlet sel -t -c "translate (string(//p[@class='caution']/ancestor::div[h4/@class='jd-details-title']/h4), '&#xA;', ' ')"
+	xmllint --html --xmlout $f 2>/dev/null | xmlstarlet sel -t -c "//p[@class='caution']/ancestor::div[h4/@class='jd-details-title' and h4/span/@class='sympad']/h4/descendant::text()"
 	echo "</methods>"
 	echo "</file>"
 done

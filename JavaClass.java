@@ -116,7 +116,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
-		setDeprecatedAttr (e, ctor.getDeclaredAnnotations ());
+		setDeprecatedAttr (e, ctor.getDeclaredAnnotations (), e.getAttribute ("name"));
 		
 		appendParameters (parent.getAttribute ("name"), ctor.getGenericParameterTypes (), getConstructorParameterOffset (ctor), ctor.isVarArgs (), doc, e);
 		e.appendChild (doc.createTextNode ("\n"));
@@ -152,7 +152,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("transient", Modifier.isTransient (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		e.setAttribute ("volatile", Modifier.isVolatile (mods) ? "true" : "false");
-		setDeprecatedAttr (e, field.getDeclaredAnnotations ());
+		setDeprecatedAttr (e, field.getDeclaredAnnotations (), e.getAttribute ("name"));
 		if (Modifier.isStatic (mods) && Modifier.isFinal (mods) && Modifier.isPublic (mods)) {
 			String type = e.getAttribute ("type");
 			try {
@@ -225,7 +225,14 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("native", Modifier.isNative (mods) ? "true" : "false");
 		e.setAttribute ("synchronized", Modifier.isSynchronized (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
-		setDeprecatedAttr (e, method.getDeclaredAnnotations ());
+
+		String easyName = method.getName () + "(";
+		Class [] ptypes = method.getParameterTypes ();
+		for (int idx = 0; idx < ptypes.length; idx++)
+			easyName += (idx > 0 ? "," : "") + ptypes [idx].getSimpleName ();
+		easyName += ")";
+		setDeprecatedAttr (e, method.getDeclaredAnnotations (), easyName);
+
 		appendParameters (method.getName (), method.getGenericParameterTypes (), 0, method.isVarArgs (), doc, e);
 
 		Class [] excTypes = method.getExceptionTypes ();
@@ -374,7 +381,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (typeParameters != null)
 			e.appendChild (typeParameters);
 
-		setDeprecatedAttr (e, jclass.getDeclaredAnnotations ());
+		setDeprecatedAttr (e, jclass.getDeclaredAnnotations (), e.getAttribute ("name"));
 		// FIXME: at some stage we'd like to use generic name.
 		//Type [] ifaces = jclass.getGenericInterfaces ();
 		Class [] ifaces = jclass.getInterfaces ();
@@ -524,12 +531,13 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	static final Pattern duplicatePackageAndClass = Pattern.compile ("([a-z0-9.]+[A-Z][a-z0-9]+)\\.\\1");
 
-	void setDeprecatedAttr (Element elem, Annotation[] annotations)
+	void setDeprecatedAttr (Element elem, Annotation[] annotations, String name)
 	{
 		boolean isDeprecated = false;
 		
 		// by reference document (they may be excessive on old versions though)
-		isDeprecated = deprecatedFields != null && deprecatedFields.indexOf (elem.getAttribute ("name")) >= 0;
+		isDeprecated = deprecatedFields != null && deprecatedFields.indexOf (name) >= 0
+			|| deprecatedMethods != null && deprecatedMethods.indexOf (name) >= 0;
 
 		// by annotations (they might not exist though)
 		for (Annotation a : annotations)

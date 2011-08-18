@@ -15,6 +15,8 @@ public class Scraper
 		Console.WriteLine ("<deprecated>");
 		char [] sep = new char [] {' '};
 		char [] fsep = new char [] {')'};
+		char [] fsep2 = new char [] {'('};
+		char [] psep = new char [] {','};
 		foreach (XmlElement file in doc.SelectNodes ("/deprecated/file")) {
 			string output = "";
 			foreach (XmlElement field in file.SelectNodes ("fields")) {
@@ -31,8 +33,15 @@ public class Scraper
 				// once remove whitespaces, join them.
 				string all = String.Join (" ", items);
 				items = all.Split (fsep, StringSplitOptions.RemoveEmptyEntries); // split at ')' to tokenize all function definitions (which should end at ')')
-				foreach (var item in items)
-					output += "  <method>" + item.Replace ("<", "&lt;") + ")</method>\n";
+				foreach (var item in items) {
+					// drop parameter name (i.e. keep only parameter type)
+					string [] fnp = (item.Trim ()).Split (fsep2, StringSplitOptions.RemoveEmptyEntries);
+					string [] signame = fnp [0].Trim ().Split (sep);
+					string [] prms = fnp.Length > 1 ? fnp [1].Split (psep, StringSplitOptions.RemoveEmptyEntries) : new string [0];
+					for (int i = 0; i < prms.Length; i++)
+						prms [i] = prms [i].Trim ().Split (sep) [0];
+					output += "  <method>" + signame [signame.Length - 1] + "(" + String.Join (",", prms).Replace ("<", "&lt;") + ")</method>\n";
+				}
 			}
 			if (output.Length == 0)
 				continue;
