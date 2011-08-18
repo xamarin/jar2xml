@@ -122,6 +122,10 @@ detailed arguments. You should rather check Makefile to see what it does.
 
   Solution ideas: scrape constant values, or use ASM.
 
+- Constant values for "protected" fields need to be retrieved, but Java reflection API throws IllegalAccessException for such attempt.
+
+  This likely has to be resolved by bytecode engineering (such as ASM).
+
 
 * Notes on Annotations
 

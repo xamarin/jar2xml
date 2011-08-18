@@ -194,10 +194,14 @@ public class JavaClass implements Comparable<JavaClass> {
 					if (value != null)
 						e.setAttribute ("value", "\"" + value.replace ("\\", "\\\\") + "\"");
 				}
+				else if (Modifier.isStatic (mods) && e.getAttribute ("type").endsWith ("[]"))
+					e.setAttribute ("value", "null");
 			} catch (Exception exc) {
 				System.err.println ("Error accessing constant field " + field.getName () + " value for class " + getName () + " : " + exc);
 			}
 		}
+		else if (!Modifier.isStatic (mods) && e.getAttribute ("type").endsWith ("[]"))
+			e.setAttribute ("value", "null");
 		e.appendChild (doc.createTextNode ("\n"));
 		parent.appendChild (e);
 	}
@@ -258,7 +262,7 @@ public class JavaClass implements Comparable<JavaClass> {
 			public int compare (Object o1, Object o2)
 			{
 				if (o1 instanceof Class && o2 instanceof Class)
-					return ((Class) o1).getSimpleName ().compareTo (((Class) o2).getSimpleName ());
+					return ((Class) o1).getName ().compareTo (((Class) o2).getName ());
 				else
 					return getGenericTypeName ((Type) o1).compareTo (getGenericTypeName ((Type) o2));
 			}
