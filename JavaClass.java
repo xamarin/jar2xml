@@ -466,22 +466,6 @@ public class JavaClass implements Comparable<JavaClass> {
 		Arrays.sort (fields, new Comparator<Field> () {
 			public int compare (Field f1, Field f2)
 			{
-				int mod1 = f1.getModifiers ();
-				int mod2 = f2.getModifiers ();
-				if (Modifier.isStatic (mod1) && Modifier.isStatic (mod1)) {
-					Type t1 = f1.getType ();
-					Type t2 = f2.getType ();
-					if (t1 instanceof Class && t1.equals (t2) && Comparable.class.isAssignableFrom ((Class) t1)) {
-						try {
-							Comparable o1 = (Comparable) f1.get (null);
-							Comparable o2 = (Comparable) f2.get (null);
-							int cmp = o1 == null || o2 == null ? 0 : o1.compareTo (o2);
-							if (cmp != 0)
-								return cmp;
-						} catch (IllegalAccessException ex) {
-						}
-					}
-				}
 				return f1.getName ().compareTo (f2.getName ());
 			}
 			public boolean equals (Object obj)
