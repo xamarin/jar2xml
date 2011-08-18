@@ -32,7 +32,9 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,24 +132,6 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (params.length > 0 && params [0].equals (jclass.getDeclaringClass ()))
 			return 1;
 		return 0;
-/*
-		int offset = 0;
-		Class cls = jclass.getDeclaringClass ();
-		int nest = 0;
-		while (cls != null) {
-			nest++;
-			cls = cls.getDeclaringClass ();
-		}
-		if (nest <= params.length) {
-			cls = jclass.getDeclaringClass ();
-			for (nest--; nest >= 0; nest--, cls = cls.getDeclaringClass ()) {
-				if (params [nest].equals (cls))
-					offset++;
-				break; // this does not seem to loop
-			}
-		}
-		return offset;
-*/
 	}
 
 	void appendField (Field field, Document doc, Element parent)
@@ -468,10 +452,43 @@ public class JavaClass implements Comparable<JavaClass> {
 		for (String sig : sigs)
 			appendMethod (methods.get (sig), doc, e);
 
-		if (!jclass.isEnum ()) // enums are somehow skipped.
-			for (Field field : jclass.getDeclaredFields ())
+		if (!jclass.isEnum ()) { // enums are somehow skipped.
+			Field [] fields = jclass.getDeclaredFields ();
+			sortFields (fields);
+			for (Field field : fields)
 				appendField (field, doc, e);
+		}
 		parent.appendChild (e);
+	}
+
+	void sortFields (Field [] fields)
+	{
+		Arrays.sort (fields, new Comparator<Field> () {
+			public int compare (Field f1, Field f2)
+			{
+				int mod1 = f1.getModifiers ();
+				int mod2 = f2.getModifiers ();
+				if (Modifier.isStatic (mod1) && Modifier.isStatic (mod1)) {
+					Type t1 = f1.getType ();
+					Type t2 = f2.getType ();
+					if (t1 instanceof Class && t1.equals (t2) && Comparable.class.isAssignableFrom ((Class) t1)) {
+						try {
+							Comparable o1 = (Comparable) f1.get (null);
+							Comparable o2 = (Comparable) f2.get (null);
+							int cmp = o1 == null || o2 == null ? 0 : o1.compareTo (o2);
+							if (cmp != 0)
+								return cmp;
+						} catch (IllegalAccessException ex) {
+						}
+					}
+				}
+				return f1.getName ().compareTo (f2.getName ());
+			}
+			public boolean equals (Object obj)
+			{
+					return obj == this;
+			}
+		});
 	}
 
 	public static String getGenericTypeName (Type type)

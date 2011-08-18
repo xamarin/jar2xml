@@ -83,8 +83,6 @@ detailed arguments. You should rather check Makefile to see what it does.
   ignored (it is abstract, though that fact does not appear on
   android javadoc).
 
-  They are temporarily workarounded by Mono.Android/metadata.
-
 - Annotation such as java.lang.Deprecated do not seem to exist
   in android.jar. That includes, types themselves.
   java.lang.annotation types suffer from this.
@@ -99,6 +97,8 @@ detailed arguments. You should rather check Makefile to see what it does.
   out/target/common/obj/JAVA_LIBRARIES/framework_intermediaries and
   out/target/common/obj/JAVA_LIBRARIES/core_intermediaries
   contains debug jars that still seem to hold annotations.
+
+  development/tools/apkcheck/README.txt might be of interest too.
 
   This is from the latest AOSP build (as of Aug.17, 2011). I'm not sure
   if this applies to older versions.
@@ -119,6 +119,8 @@ detailed arguments. You should rather check Makefile to see what it does.
 
   java.io.File.pathSeparatorChar has the same problem, but it is worse;
   it returns non-zero value so we cannot depend on the value.
+
+  Solution ideas: scrape constant values, or use ASM.
 
 
 * Notes on Annotations
