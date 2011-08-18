@@ -15,9 +15,16 @@ and associated documentation.  The information is stored in XML format.
 	- scraper.exe : annotation doc scraper to generate annotations/*.xml.
 	  scraper-*.sh : shells used for scraper input. They are piped.
 
+
 * <del>Easy</del> comparison
 
-well, now it's getting much more complicated than it used to be like below...
+  There are two levels of comparisons.
+
+  DLL: gui-compare in mono-tools is your friend. Compare new one against
+  old assembly of the corresponding API profile.
+
+  XML: It is now implemented as "make test-8" as well as "make test-13" 
+  See Makefile for details. Things are not really simple to explain shortly.
 
 	$ java -jar jar2xml.jar --jar=/home/atsushi/android-sdk-linux_x86/platforms/android-8/android.jar --out=_8.xml --docpath=/home/atsushi/android-sdk-linux_x86/docs/reference
 	$ mono-xmltool --prettyprint 8.xml > 8_.xml
@@ -25,9 +32,6 @@ well, now it's getting much more complicated than it used to be like below...
 	$ mono-xmltool --prettyprint _8.xml > _8_.xml
 	$ xmlstarlet c14n _8_.xml > _8.xml
 	$ diff -u 8.xml _8.xml
-
-It is now implemented as "make test-8" as well as "make test-13" with more
-detailed arguments. You should rather check Makefile to see what it does.
 
 
 * Difference from AOSP API XML
@@ -61,6 +65,35 @@ detailed arguments. You should rather check Makefile to see what it does.
 
 * TODO
 
+** Resolve Java-ism issue
+
+- java.lang.AbstractStringBuilder exposes an issue that
+  interface members on non-public types are returned by
+  class#getDeclaredMethods() while they are *not* declared.
+  
+  Those methods (or those AbstractStringBuilder methods) are excluded by
+  checking special modifier 0x1000 (4096).
+  Also this involves check for derived methods (many overriden methods are
+  excluded, but this brings another check to *not* exclude methods when
+  the corresponding base methods are excluded).
+
+** Byte code engineering
+
+- Some fields seem to be incorrectly marked as constant. For example,
+  android.os.Build.TIME is not a constant, but since the field.getLong()
+  returns 0, it is set as 0 (and it does not return null for get()).
+
+  java.io.File.pathSeparatorChar has the same problem, but it is worse;
+  it returns non-zero value so we cannot depend on the value.
+
+  Solution ideas: scrape constant values, or use ASM.
+
+- Constant values for "protected" fields need to be retrieved, but Java reflection API throws IllegalAccessException for such attempt.
+
+  This likely has to be resolved by bytecode engineering (such as ASM).
+
+** Method override resolution
+
 - Do not skip certain overriden methods. This in JavaClass.java gives
   equivalent output to AOSP xml, but it's not good:
 
@@ -83,29 +116,6 @@ detailed arguments. You should rather check Makefile to see what it does.
   ignored (it is abstract, though that fact does not appear on
   android javadoc).
 
-- java.lang.AbstractStringBuilder exposes an issue that
-  interface members on non-public types are returned by
-  class#getDeclaredMethods() while they are *not* declared.
-  
-  Those methods (or those AbstractStringBuilder methods) are excluded by
-  checking special modifier 0x1000 (4096).
-  Also this involves check for derived methods (many overriden methods are
-  excluded, but this brings another check to *not* exclude methods when
-  the corresponding base methods are excluded).
-
-- Some fields seem to be incorrectly marked as constant. For example,
-  android.os.Build.TIME is not a constant, but since the field.getLong()
-  returns 0, it is set as 0 (and it does not return null for get()).
-
-  java.io.File.pathSeparatorChar has the same problem, but it is worse;
-  it returns non-zero value so we cannot depend on the value.
-
-  Solution ideas: scrape constant values, or use ASM.
-
-- Constant values for "protected" fields need to be retrieved, but Java reflection API throws IllegalAccessException for such attempt.
-
-  This likely has to be resolved by bytecode engineering (such as ASM).
-
 - There are some classes that have extraneous "CompareTo(Object)" method
   - Android.Net.Uri, 
 
@@ -117,7 +127,9 @@ detailed arguments. You should rather check Makefile to see what it does.
 - Check extra members (almost even not examined yet)
 
 
-* Notes on Annotations
+* Notes (that you don't have to read)
+
+** Notes on Annotations
 
   Annotation such as java.lang.Deprecated do not seem to exist
   in android.jar. That includes, types themselves.
@@ -169,7 +181,7 @@ detailed arguments. You should rather check Makefile to see what it does.
 	java.lang.annotation.Documented
 
 
-* Old Notes on Annotations
+** Old Notes on Annotations
 
 Current implementation uses java.lang.reflect API to get member
 annotations, but it won't work as expected.
@@ -204,7 +216,7 @@ makefiles before confirming that it's all good).
 [*2] http://asm.ow2.org/asm33/javadoc/user/org/objectweb/asm/ClassReader.html
 
 
-* Notes on per-version doc scraping
+** Notes on per-version doc scraping
 
 We used to scrape only reference for the latest API which was problematic.
 Now we have version-aware scraper and resolved the issue described below.
