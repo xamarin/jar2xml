@@ -87,7 +87,7 @@ detailed arguments. You should rather check Makefile to see what it does.
   in android.jar. That includes, types themselves.
   java.lang.annotation types suffer from this.
 
-  I find it almost desparate and the only solution I can think of is
+  I find it almost desparate and the only solution I couold think of was
   to build AOSP android.jar or some equivalence that does *not* strip
   those annotations off, *for each platform version*.
   That sounds so time-eater.
@@ -102,6 +102,11 @@ detailed arguments. You should rather check Makefile to see what it does.
 
   This is from the latest AOSP build (as of Aug.17, 2011). I'm not sure
   if this applies to older versions.
+
+  On the other hand, I noticed that Annotation types are very easy to fill;
+  they have almost fixed members (from java.lang.Object). So I rather
+  think they can be manually filled (or if we want to be puritan, scrape
+  "Known Indirect Subclasses" from java/lang/annotation/Annotation.html).
 
 - java.lang.AbstractStringBuilder exposes an issue that
   interface members on non-public types are returned by
