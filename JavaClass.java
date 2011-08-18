@@ -165,7 +165,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (type == "short")
 					e.setAttribute ("value", String.format ("%d", field.getShort (null)));
 				else if (type == "long")
-					e.setAttribute ("value", String.format ("%d", field.getLong (null)));
+					e.setAttribute ("value", String.format ("%dL", field.getLong (null)));
 				else if (type == "float")
 					e.setAttribute ("value", String.format ("%f", field.getFloat (null)));
 				else if (type == "double") {
