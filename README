@@ -83,31 +83,6 @@ detailed arguments. You should rather check Makefile to see what it does.
   ignored (it is abstract, though that fact does not appear on
   android javadoc).
 
-- Annotation such as java.lang.Deprecated do not seem to exist
-  in android.jar. That includes, types themselves.
-  java.lang.annotation types suffer from this.
-
-  I find it almost desparate and the only solution I couold think of was
-  to build AOSP android.jar or some equivalence that does *not* strip
-  those annotations off, *for each platform version*.
-  That sounds so time-eater.
-
-  The AOSP API document is generated as out/target/common/obj/PACKAGING/android_jar_intermediaries/public_api.xml (at that state there still must be annotations, or this xml should not contain annotation information at all).
-  Also, 
-  out/target/common/obj/JAVA_LIBRARIES/framework_intermediaries and
-  out/target/common/obj/JAVA_LIBRARIES/core_intermediaries
-  contains debug jars that still seem to hold annotations.
-
-  development/tools/apkcheck/README.txt might be of interest too.
-
-  This is from the latest AOSP build (as of Aug.17, 2011). I'm not sure
-  if this applies to older versions.
-
-  On the other hand, I noticed that Annotation types are very easy to fill;
-  they have almost fixed members (from java.lang.Object). So I rather
-  think they can be manually filled (or if we want to be puritan, scrape
-  "Known Indirect Subclasses" from java/lang/annotation/Annotation.html).
-
 - java.lang.AbstractStringBuilder exposes an issue that
   interface members on non-public types are returned by
   class#getDeclaredMethods() while they are *not* declared.
@@ -139,8 +114,62 @@ detailed arguments. You should rather check Makefile to see what it does.
 
 - KeyStoreBuilderParameters.Parameters and .ctor()
 
+- Check extra members (almost even not examined yet)
+
 
 * Notes on Annotations
+
+  Annotation such as java.lang.Deprecated do not seem to exist
+  in android.jar. That includes, types themselves.
+  java.lang.annotation types suffer from this.
+
+  I find it almost desparate and the only solution I couold think of was
+  to build AOSP android.jar or some equivalence that does *not* strip
+  those annotations off, *for each platform version*.
+  That sounds so time-eater.
+
+  The AOSP API document is generated as out/target/common/obj/PACKAGING/android_jar_intermediaries/public_api.xml (at that state there still must be annotations, or this xml should not contain annotation information at all).
+  Also,
+  out/target/common/obj/JAVA_LIBRARIES/framework_intermediaries and
+  out/target/common/obj/JAVA_LIBRARIES/core_intermediaries
+  contains debug jars that still seem to hold annotations.
+
+  development/tools/apkcheck/README.txt might be of interest too.
+
+  This is from the latest AOSP build (as of Aug.17, 2011). I'm not sure
+  if this applies to older versions.
+
+  On the other hand, I noticed that Annotation types are very easy to fill;
+  they have almost fixed members (from java.lang.Object). So I rather
+  think they can be manually filled (or if we want to be puritan, scrape
+  "Known Indirect Subclasses" from java/lang/annotation/Annotation.html).
+
+  Annotations are:
+	android.test.FlakyTest
+	android.test.UiThreadTest
+	android.test.suitebuilder.annotation.LargeTest
+	android.test.suitebuilder.annotation.MediumTest
+	android.test.suitebuilder.annotation.SmallTest
+	android.test.suitebuilder.annotation.Smoke
+	android.test.suitebuilder.annotation.Suppress
+	android.view.ViewDebug$CapturedViewProperty
+	android.view.ViewDebug$ExportedProperty
+	android.view.ViewDebug$FlagToString
+	android.view.ViewDebug$IntToString
+	android.widget.RemoteViews$RemoteView
+	dalvik.annotation.TestTarget
+	dalvik.annotation.TestTargetClass
+	java.lang.Deprecated
+	java.lang.Override
+	java.lang.SuppressWarnings
+	java.lang.annotation.Documented
+	java.lang.annotation.Inherited
+	java.lang.annotation.Retention
+	java.lang.annotation.Target
+	java.lang.annotation.Documented
+
+
+* Old Notes on Annotations
 
 Current implementation uses java.lang.reflect API to get member
 annotations, but it won't work as expected.

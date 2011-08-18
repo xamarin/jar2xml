@@ -36,8 +36,53 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class Start {
+
+	// FIXME: for future compatibility, they had better be scraped
+	// from java/lang/annotated/Annotation.html (known *direct subclasses)
+	static final 	String [] annotations = {
+		"android.test.FlakyTest",
+		"android.test.UiThreadTest",
+		"android.test.suitebuilder.annotation.LargeTest",
+		"android.test.suitebuilder.annotation.MediumTest",
+		"android.test.suitebuilder.annotation.SmallTest",
+		"android.test.suitebuilder.annotation.Smoke",
+		"android.test.suitebuilder.annotation.Suppress",
+		"android.view.ViewDebug$CapturedViewProperty",
+		"android.view.ViewDebug$ExportedProperty",
+		"android.view.ViewDebug$FlagToString",
+		"android.view.ViewDebug$IntToString",
+		"android.widget.RemoteViews$RemoteView",
+		"dalvik.annotation.TestTarget",
+		"dalvik.annotation.TestTargetClass",
+		"java.lang.Deprecated",
+		"java.lang.Override",
+		"java.lang.SuppressWarnings",
+		"java.lang.annotation.Documented",
+		"java.lang.annotation.Inherited",
+		"java.lang.annotation.Retention",
+		"java.lang.annotation.Target",
+		"java.lang.annotation.Documented"
+		};
+
+	static Element createAnnotationMock (Document doc, String name)
+	{
+		Element e = doc.createElement ("class");
+		e.setAttribute ("abstract", "true");
+		e.setAttribute ("deprecated", "not deprecated");
+		e.setAttribute ("extends", "java.lang.Object");
+		e.setAttribute ("final", "false");
+		e.setAttribute ("name", name);
+		e.setAttribute ("static", "false");
+		e.setAttribute ("visibility", "public");
+		Element i = doc.createElement ("implements");
+		i.setAttribute ("name", "java.lang.annotation.Annotation");
+		e.appendChild (i);
+		return e;
+	}
 
 	public static void main (String[] args)
 	{
@@ -97,6 +142,20 @@ public class Start {
 		doc.appendChild (root);
 		for (JavaPackage pkg : jar.getPackages ())
 			pkg.appendToDocument (doc, root);
+		for (String ann : annotations) {
+			String pkg = ann.substring (0, ann.lastIndexOf ('.'));
+			NodeList nl = root.getChildNodes ();
+			for (int ind = 0; ind < nl.getLength (); ind++) {
+				Node n = nl.item (ind);
+				if (!(n instanceof Element))
+					continue;
+				Element el = (Element) n;
+				if (el.getAttribute ("name").equals (pkg)) {
+					String local = ann.substring (pkg.length () + 1);
+					el.appendChild (createAnnotationMock (doc, local.replace ("$", ".")));
+				}
+			}
+		}
 
 		try {
 			TransformerFactory transformer_factory = TransformerFactory.newInstance ();
