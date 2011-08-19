@@ -25,6 +25,7 @@
 package jar2xml;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.jar.JarFile;
@@ -34,6 +35,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import org.objectweb.asm.*;
+import org.objectweb.asm.tree.*;
 
 public class JavaArchive {
 
@@ -61,14 +64,21 @@ public class JavaArchive {
 			if (name.endsWith (".class")) {
 				name = name.substring (0, name.length () - 6);
 				try {
+					InputStream stream = file.getInputStream (entry);
+					ClassReader reader = new ClassReader (stream);
+					ClassNode node = new ClassNode ();
+					reader.accept (node, 0);
+					
 					Class c = loader.loadClass (name.replace ('/', '.'));
-					String pkgname = c.getPackage ().getName ();
+					//String pkgname = c.getPackage ().getName ();
+					String pkgname = name.substring (0, name.lastIndexOf ('/')).replace ('/', '.');
+
 					JavaPackage pkg = packages.get (pkgname);
 					if (pkg == null) {
 						pkg = new JavaPackage (pkgname);
 						packages.put (pkgname, pkg);
 					}
-					pkg.addClass (new JavaClass (c));
+					pkg.addClass (new JavaClass (c, node));
 				} catch (Throwable t) {
 					System.err.println ("Couldn't load class " + name);
 				}

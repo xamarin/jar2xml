@@ -17,11 +17,11 @@ sources = \
 	JavaPackage.java \
 	Start.java
 
-$(TARGET): $(sources)
+$(TARGET): $(sources) MANIFEST.MF
 	-rm -rf obj
 	mkdir -p obj
-	javac -g -d obj $(sources)
-	jar cfe "$@" jar2xml.Start -C obj/ .
+	javac -g -d obj $(sources) -cp asm-debug-all-4.0_RC1.jar
+	jar cfm "$@" MANIFEST.MF asm-debug-all-4.0_RC1.jar -C obj/ .
 
 scraper.exe : scraper.cs
 	mcs -debug scraper.cs

@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: jar2xml.Start
+Class-Path: asm-debug-all-3.3.1.jar
+

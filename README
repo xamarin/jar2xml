@@ -8,6 +8,7 @@ and associated documentation.  The information is stored in XML format.
 	- xmllint (for doc scraping)
 	- xmlstarlet (ditto)
 
+	Also it uses ASM (included in the sources)
 
 * Tools
 
@@ -76,21 +77,6 @@ and associated documentation.  The information is stored in XML format.
   Also this involves check for derived methods (many overriden methods are
   excluded, but this brings another check to *not* exclude methods when
   the corresponding base methods are excluded).
-
-** Byte code engineering
-
-- Some fields seem to be incorrectly marked as constant. For example,
-  android.os.Build.TIME is not a constant, but since the field.getLong()
-  returns 0, it is set as 0 (and it does not return null for get()).
-
-  java.io.File.pathSeparatorChar has the same problem, but it is worse;
-  it returns non-zero value so we cannot depend on the value.
-
-  Solution ideas: scrape constant values, or use ASM.
-
-- Constant values for "protected" fields need to be retrieved, but Java reflection API throws IllegalAccessException for such attempt.
-
-  This likely has to be resolved by bytecode engineering (such as ASM).
 
 ** Method override resolution
 
@@ -232,4 +218,24 @@ Now we have version-aware scraper and resolved the issue described below.
   the case). We'll have to sort out some alternative approach.
   A possible approach is to checkout API docs for *every* version (from
   AOSP).
+</historical>
+
+
+** Byte code engineering
+
+Now we use ASM to solve the issues below:
+
+<historical>
+- Some fields were incorrectly marked as constant. For example,
+  android.os.Build.TIME is not a constant, but since the field.getLong()
+  returns 0, it is set as 0 (and it does not return null for get()).
+
+  java.io.File.pathSeparatorChar has the same problem, but it is worse;
+  it returns non-zero value so we cannot depend on the value.
+
+  Solution ideas: scrape constant values, or use ASM.
+
+- Constant values for "protected" fields need to be retrieved, but Java reflection API throws IllegalAccessException for such attempt.
+
+  This likely has to be resolved by bytecode engineering (such as ASM).
 </historical>

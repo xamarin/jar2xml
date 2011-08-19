@@ -42,18 +42,26 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.objectweb.asm.*;
+import org.objectweb.asm.tree.*;
 
 public class JavaClass implements Comparable<JavaClass> {
 
 	private Class jclass;
+	private ClassNode asm;
+	private Map<String,FieldNode> asmFields;
 	private List<String> deprecatedFields;
 	private List<String> deprecatedMethods;
 
-	public JavaClass (Class jclass)
+	public JavaClass (Class jclass, ClassNode asm)
 	{
 		this.jclass = jclass;
 		deprecatedFields = AndroidDocScraper.getDeprecatedFields (jclass);
 		deprecatedMethods = AndroidDocScraper.getDeprecatedMethods (jclass);
+		asmFields = new HashMap<String,FieldNode> ();
+
+		for (FieldNode fn : (List<FieldNode>) asm.fields)
+			asmFields.put (fn.name, fn);
 	}
 
 	public int compareTo (JavaClass jc)
@@ -134,7 +142,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		return 0;
 	}
 
-	void appendField (Field field, Document doc, Element parent)
+	void appendField (Field field, FieldNode asmField, Document doc, Element parent)
 	{
 		int mods = field.getModifiers ();
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
@@ -153,24 +161,40 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		e.setAttribute ("volatile", Modifier.isVolatile (mods) ? "true" : "false");
 		setDeprecatedAttr (e, field.getDeclaredAnnotations (), e.getAttribute ("name"));
-		if (Modifier.isStatic (mods) && Modifier.isFinal (mods) && Modifier.isPublic (mods)) {
+
+		// *** constant value retrieval ***
+		// sadly, there is no perfect solution:
+		// - basically we want to use ASM, but sometimes ASM fails
+		//   to create FieldNode instance.
+		// - on the other hand, reflection 
+		//   - does not allow access to protected fields.
+		//   - sometimes returns "default" value for "undefined" 
+		//     values such as 0 for ints and false for boolean.
+		// 
+		// basically we use ASM here.
+		
+		if (asmField == null)
+			// this happens to couple of fields on java.awt.font.TextAttribute, java.lang.Double/Float and so on.
+			System.err.println ("!!!!! WARNING!!! null ASM FieldNode for " + field);
+		else if (asmField.value != null) {
 			String type = e.getAttribute ("type");
+			boolean isPublic = Modifier.isPublic (mods);
 			try {
 				if (type == "int")
-					e.setAttribute ("value", String.format ("%d", field.getInt (null)));
+					e.setAttribute ("value", String.format ("%d", asmField.value));
 				else if (type == "byte")
-					e.setAttribute ("value", String.format ("%d", field.getByte (null)));
+					e.setAttribute ("value", String.format ("%d", asmField.value));
 				else if (type == "char")
-					e.setAttribute ("value", String.format ("%d", (int) field.getChar (null)));
+					e.setAttribute ("value", String.format ("%d", asmField.value));
 				else if (type == "short")
-					e.setAttribute ("value", String.format ("%d", field.getShort (null)));
+					e.setAttribute ("value", String.format ("%d", asmField.value));
 				else if (type == "long")
-					e.setAttribute ("value", String.format ("%dL", field.getLong (null)));
+					e.setAttribute ("value", String.format ("%dL", asmField.value));
 				else if (type == "float")
-					e.setAttribute ("value", String.format ("%f", field.getFloat (null)));
+					e.setAttribute ("value", String.format ("%f", isPublic ? field.getFloat (null) : asmField.value));
 				else if (type == "double") {
 					// see java.lang.Double constants.
-					double dvalue = field.getDouble (null);
+					double dvalue = (Double) asmField.value;
 					String svalue;
 					
 					if (dvalue == Double.MAX_VALUE)
@@ -184,13 +208,16 @@ public class JavaClass implements Comparable<JavaClass> {
 					else if (dvalue == Double.NEGATIVE_INFINITY)
 						svalue = "(-1.0 / 0.0)";
 					else
-						svalue = String.format ("%f", dvalue);
+						// FIXME: here we specify "limited" digits for formatting.
+						// This should fix most cases, but this could still result in not-precise value.
+						// Math.E and Math.PI works with this.
+						svalue = String.format ("%.15f", dvalue);
 					e.setAttribute ("value", svalue);
 				}
 				else if (type == "boolean")
-					e.setAttribute ("value", field.getBoolean (null) ? "true" : "false");
+					e.setAttribute ("value", 0 == (Integer) asmField.value ? "true" : "false");
 				else if (type == "java.lang.String") {
-					String value = (String) field.get (null);
+					String value = (String) asmField.value;
 					if (value != null)
 						e.setAttribute ("value", "\"" + value.replace ("\\", "\\\\") + "\"");
 				}
@@ -467,7 +494,7 @@ public class JavaClass implements Comparable<JavaClass> {
 			Field [] fields = jclass.getDeclaredFields ();
 			sortFields (fields);
 			for (Field field : fields)
-				appendField (field, doc, e);
+				appendField (field, asmFields.get (field.getName ()), doc, e);
 		}
 		parent.appendChild (e);
 	}

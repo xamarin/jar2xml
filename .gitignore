@@ -1,2 +1,6 @@
-*.jar
+jar2xml.jar
 obj
+tmpout/*.xml
+annotations/*.xml
+scraper.exe
+scraper.exe.mdb
