@@ -467,12 +467,9 @@ public class JavaClass implements Comparable<JavaClass> {
 					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)) && Modifier.isPublic (base_decl_class_mods)) {
 						if (!Modifier.isAbstract (mmods) || method.getName ().equals ("finalize")) // this is to not exclude some "override-as-abstract"  methods e.g. android.net.Uri.toString(), android.view.ViewGroup.onLayout()
 							continue;
-						else
-							System.err.println ("Method " + method + " survived override filtering");
 					}
 				}
 			}
-if (jclass.getName().equals ("android.view.ViewGroup")) System.err.println (method.getName ());
 
 			String key = getSignature (method);
 			if (methods.containsKey (key)) {
