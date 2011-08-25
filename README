@@ -68,14 +68,14 @@ and associated documentation.  The information is stored in XML format.
 
 ** should be resolved before preview
 
-- extraneous "CompareTo(Object)" method
-  - e.g. android.net.Uri, java.util.Calendar, java.util.Date, java.util.UUID, java.nio.Charset and so on.
-  - They implement Comparable<T> and since either <T> went away in
-    android.jar or jar2xml ignores generic type arguments and treats T
-    arg as Object, this extra method is returned.
+- Some constant mismatch:
+  - android.hardware.SensorManager : GRAVITY_DEATH_STAR_I
+  - android.util.Config : Logd, Logv, Profile
+  - android.view.ViewDebug : TRACE_HIERARCHY and TRACE_RECYCLER
 
 ** could be resolved after preview - before release
 
+- java.nio.*Buffer : arrayOffset() are not final but should be final.
 - android.widget.Filter : CharSequence and string issue
   (probably too strong method filtering in jar2xml)
 - java.security.Provider.put() : missing in jar2xml output.
@@ -307,3 +307,15 @@ Now we use ASM to solve the issues below:
   ignored (it is abstract, though that fact does not appear on
   android javadoc).
 </maybe-historical>
+
+** Erased generic issues
+
+<workarounded>
+- extraneous "CompareTo(Object)" method
+  - e.g. android.net.Uri, java.util.Calendar, java.util.Date, java.util.UUID, java.nio.Charset and so on.
+  - They implement Comparable<T> and since either <T> went away in
+    android.jar or jar2xml ignores generic type arguments and treats T
+    arg as Object, this extra method is returned.
+- similarly, Comparator<T> brings extra Compare(Object, Object) overloads.
+
+</workarounded>

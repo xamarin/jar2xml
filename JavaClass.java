@@ -470,6 +470,20 @@ public class JavaClass implements Comparable<JavaClass> {
 					}
 				}
 			}
+			
+			Comparator clscmp = new Comparator<Class> () {
+				public int compare (Class c1, Class c2) {
+					return c1.getName ().compareTo (c2.getName ());
+				}
+			};
+			
+			// These special rules are required to filter out incorrectly returned compareTo(Object) Comparable<T> implementation (maybe it is due to "erased generics").
+			if (Arrays.binarySearch (jclass.getInterfaces (), Comparable.class, clscmp) >= 0 && method.getName ().equals ("compareTo") && ptypes [0].equals (Object.class)
+			    // IF this worked in Java ... <code>if (... && ptypes [0] != jclass.GetGenericArguments () [0])</code>
+			    && !jclass.equals (java.io.ObjectStreamField.class))
+				continue;
+			if (Arrays.binarySearch (jclass.getInterfaces (), Comparator.class, clscmp) >= 0 && method.getName ().equals ("compare") && ptypes.length == 2 && ptypes [0].equals (Object.class) && ptypes [1].equals (Object.class))
+				continue;
 
 			String key = getSignature (method);
 			if (methods.containsKey (key)) {
