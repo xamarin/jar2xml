@@ -73,36 +73,26 @@ and associated documentation.  The information is stored in XML format.
   - They implement Comparable<T> and since either <T> went away in
     android.jar or jar2xml ignores generic type arguments and treats T
     arg as Object, this extra method is returned.
-- android.view.ViewGroup.onLayout() : missing in jar2xml output.
 
 ** could be resolved after preview - before release
 
 - android.widget.Filter : CharSequence and string issue
   (probably too strong method filtering in jar2xml)
 - java.security.Provider.put() : missing in jar2xml output.
+  maybe disappeared in the shade of Hashtable.put().
 - java.net.ssl.KeyStoreBuilderParameters.Parameters and .ctor() : types differ
   - generic list
 - android.text.method.LinkMovementMethod.getInstance()
   - disappeared in xml. Maybe this static method vanished in the shade of
     ScrollingMovementMethod.getInstance() (same return, static).
-- javax.net.ssl.SSLServerSocketFactory.getDefault() is missing
-  - ditto, behind ServerSocketFactory.getDefault() (but see below).
-
-** cosmetic, can be postponed
-
-- java.security.Permission : equals() and hashCode() are missing.
+  - javax.net.ssl.SSLServerSocketFactory.getDefault() too
+  - javax.net.ssl.SSLSocketFactory.getDefault() too
 
 ** Postponed
 
 - android.test.MoreAsserts.assertEquals(Set<?>, Set<?>).
   They are just XML difference between <?> (wrong) and <? extends Object>
   (correct), which affected doc scraping for parameter name retrieval.
-
-- In some classes, ToString() override is missing. They are explicitly
-  declared as *abstract* in each class. They will likely become "new"
-  overload (i.e. not an overriden method). It's likely harmless.
-  - android.net.Uri, javax.security.cert.Certificate, 
-    java.security.cert.{Certificate/CRL/X509CRLEntry}
 
 - java.util.Calendar AllStyles, Long and Short are now properties, but
   they should be actually enums. The thing is, they are *missing* in AOSP

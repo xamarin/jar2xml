@@ -460,16 +460,19 @@ public class JavaClass implements Comparable<JavaClass> {
 				}
 							
 				if (base_method != null) {
-					if (Modifier.isAbstract (mmods))
-						continue;
 					// FIXME: this causes GridView.setAdapter() skipped.
 					// Removing this entire block however results in more confusion. See README.
 					int base_mods = base_method.getModifiers ();
 					int base_decl_class_mods = base_method.getDeclaringClass ().getModifiers (); // This is to not exclude methods that are excluded in the base type by modifiers (e.g. some AbstractStringBuilder methods)
-					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)) && Modifier.isPublic (base_decl_class_mods))
-						continue;
+					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)) && Modifier.isPublic (base_decl_class_mods)) {
+						if (!Modifier.isAbstract (mmods) || method.getName ().equals ("finalize")) // this is to not exclude some "override-as-abstract"  methods e.g. android.net.Uri.toString(), android.view.ViewGroup.onLayout()
+							continue;
+						else
+							System.err.println ("Method " + method + " survived override filtering");
+					}
 				}
 			}
+if (jclass.getName().equals ("android.view.ViewGroup")) System.err.println (method.getName ());
 
 			String key = getSignature (method);
 			if (methods.containsKey (key)) {
