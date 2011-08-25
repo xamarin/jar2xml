@@ -250,7 +250,11 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
 		e.setAttribute ("native", Modifier.isNative (mods) ? "true" : "false");
-		e.setAttribute ("synchronized", Modifier.isSynchronized (mods) ? "true" : "false");
+		// This special condition is due to API difference between Oracle Java and android.
+		if (jclass.equals (javax.net.ServerSocketFactory.class) && method.getName ().equals ("getDefault"))
+			e.setAttribute ("synchronized", "true");
+		else
+			e.setAttribute ("synchronized", Modifier.isSynchronized (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 
 		String easyName = method.getName () + "(";
