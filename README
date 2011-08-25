@@ -66,54 +66,91 @@ and associated documentation.  The information is stored in XML format.
 
 * TODO
 
-** Resolve Java-ism issue
+** should be resolved before preview
 
-- java.lang.AbstractStringBuilder exposes an issue that
-  interface members on non-public types are returned by
-  class#getDeclaredMethods() while they are *not* declared.
-  
-  Those methods (or those AbstractStringBuilder methods) are excluded by
-  checking special modifier 0x1000 (4096).
-  Also this involves check for derived methods (many overriden methods are
-  excluded, but this brings another check to *not* exclude methods when
-  the corresponding base methods are excluded).
+- extraneous "CompareTo(Object)" method
+  - e.g. android.net.Uri, java.util.Calendar, java.util.Date, java.util.UUID, java.nio.Charset and so on.
+  - They implement Comparable<T> and since either <T> went away in
+    android.jar or jar2xml ignores generic type arguments and treats T
+    arg as Object, this extra method is returned.
+- android.view.ViewGroup.onLayout() : missing in jar2xml output.
 
-** Method override resolution
+** could be resolved after preview - before release
 
-- Do not skip certain overriden methods. This in JavaClass.java gives
-  equivalent output to AOSP xml, but it's not good:
+- android.widget.Filter : CharSequence and string issue
+  (probably too strong method filtering in jar2xml)
+- java.security.Provider.put() : missing in jar2xml output.
+- java.net.ssl.KeyStoreBuilderParameters.Parameters and .ctor() : types differ
+  - generic list
+- android.text.method.LinkMovementMethod.getInstance()
+  - disappeared in xml. Maybe this static method vanished in the shade of
+    ScrollingMovementMethod.getInstance() (same return, static).
+- javax.net.ssl.SSLServerSocketFactory.getDefault() is missing
+  - ditto, behind ServerSocketFactory.getDefault() (but see below).
 
-		if (base_method != null) {
-			int base_mods = base_method.getModifiers ();
-			if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)))
-				continue;
-		}
+** cosmetic, can be postponed
 
-  This causes GridView.setAdapter() ignored and thus fails to generate
-  valid property. It hides overriden methods.
+- java.security.Permission : equals() and hashCode() are missing.
 
-  I simply commented out, then a bunch of hidden overriden methods
-  appeared. And since we don't handle int->enum conversions on those
-  methods, they simply fail to compile. Maybe fixing above to match
-  existing format is a good-enough compromization.
+** Postponed
 
-  Another notable thing is that AbsListView.setAdapter() does not
-  exist in api-4.xml. It is likely because abstract methods are
-  ignored (it is abstract, though that fact does not appear on
-  android javadoc).
+- android.test.MoreAsserts.assertEquals(Set<?>, Set<?>).
+  They are just XML difference between <?> (wrong) and <? extends Object>
+  (correct), which affected doc scraping for parameter name retrieval.
 
-- There are some classes that have extraneous "CompareTo(Object)" method
-  - Android.Net.Uri, 
+- In some classes, ToString() override is missing. They are explicitly
+  declared as *abstract* in each class. They will likely become "new"
+  overload (i.e. not an overriden method). It's likely harmless.
+  - android.net.Uri, javax.security.cert.Certificate, 
+    java.security.cert.{Certificate/CRL/X509CRLEntry}
 
-- In some classes, ToString() override is missing:
-  - Android.Net.Uri, Java.Security.Cert.Certificate, Javax.Security.Cert.Certificate, CRL, X509CRLEntry
+- java.util.Calendar AllStyles, Long and Short are now properties, but
+  they should be actually enums. The thing is, they are *missing* in AOSP
+  XML so they had weren't converted to enums by our generator stuff.
 
-- KeyStoreBuilderParameters.Parameters and .ctor()
-
-- Check extra members (almost even not examined yet)
-
+- android.util.Pair : ThresholdClass and ThreasholdType are extraneous.
+  They are not in jar2xml output either, maybe added by api fixup stage.
+  (First and Second are looking as extra, but they were rather missing)
 
 * Notes (that you don't have to read)
+
+** API difference between android.jar and J2SE
+
+These API differences could be problematic when we reflect java system types (reflection limitation).
+
+- javax.net.ssl.ServerSocketFactory.getDefault() is synchronized in android
+  and not in J2SE.
+  -> in jar2xml, it is manually fixed.
+
+** AOSP XML issues
+
+Lots of missing pieces:
+- javax.security.auth.x500.X500Principal
+  .ctor(string,Map<string,string>) and getName(string,Map<string,string>)
+- javax.net.ssl.SSLContext.Default is missing.
+- java.util.Arrays : copyOf() and binarySearch(T[],int,int,T).
+- java.util.Calendar.getDisplayNames(), ALL_STYLES, LONG, SHORT
+- java.util.Locale.ROOT
+- java.util.Properties : stringPropertyNames(), load(Reader), store(Writer)
+- java.util.PropertyResourceBundle.ctor(Reader)
+- java.util.ResourceBundle : containsKey(), handleKeySet(), keySet(),
+  clearCache(), clearCache(ClassLoader)
+- java.security.Provider : getProvider(), getType(), 
+  UNSUPPORTED_EMPTY_COLLECTION
+- java.net.NetworkInterface : getMTU(), isLoopback(), isUp() ... many
+- java.lang.StringBuffer and java.lang.StringBuilder miss lots of methods.
+  (They are likely in AbstractStringBuilder.)
+- java.lang.Math : copySign(), nextAfter(), nextUp(), scalb(), getExponent()
+- java.lang.Double and java.lang.Float : MAX_EXPONENT, MIN_EXPONENT, MIN_NORMAL
+- java.io.PrintStream.clearError() and java.io.PrintWriter.clearError()
+- java.io.PipedReader : .ctor(PipedWriter,int) and .ctor(int)
+- java.io.ObjectStreamClass.lookupAny(Class)
+- java.io.Throwable : .ctor(Throwable) and .ctor(string,Throwable)
+- java.io.File : canExecute(), setExecutable(), setReadable(), setWritable(),
+  getFreeSpace(), getTotalSpace(), getUsableSpace()
+
+java.security.Policy : refresh() and getPermissions() are marked as abstract,
+but they are not (confirmed in API reference and libcore/luni).
 
 ** Notes on Annotations
 
@@ -239,3 +276,44 @@ Now we use ASM to solve the issues below:
 
   This likely has to be resolved by bytecode engineering (such as ASM).
 </historical>
+
+
+** Issues regarding stripped non-public class (resolved)
+
+<maybe-historical>
+- java.lang.AbstractStringBuilder exposes an issue that
+  interface members on non-public types are returned by
+  class#getDeclaredMethods() while they are *not* declared.
+  
+  Those methods (or those AbstractStringBuilder methods) are excluded by
+  checking special modifier 0x1000 (4096).
+  Also this involves check for derived methods (many overriden methods are
+  excluded, but this brings another check to *not* exclude methods when
+  the corresponding base methods are excluded).
+</maybe-historical>
+
+** Method override resolution
+
+<maybe-historical>
+- Do not skip certain overriden methods. This in JavaClass.java gives
+  equivalent output to AOSP xml, but it's not good:
+
+		if (base_method != null) {
+			int base_mods = base_method.getModifiers ();
+			if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)))
+				continue;
+		}
+
+  This causes GridView.setAdapter() ignored and thus fails to generate
+  valid property. It hides overriden methods.
+
+  I simply commented out, then a bunch of hidden overriden methods
+  appeared. And since we don't handle int->enum conversions on those
+  methods, they simply fail to compile. Maybe fixing above to match
+  existing format is a good-enough compromization.
+
+  Another notable thing is that AbsListView.setAdapter() does not
+  exist in api-4.xml. It is likely because abstract methods are
+  ignored (it is abstract, though that fact does not appear on
+  android javadoc).
+</maybe-historical>
