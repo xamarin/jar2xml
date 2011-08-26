@@ -1,3 +1,5 @@
+API_LEVELS = 8 10 13
+
 TARGET=jar2xml.jar 
 
 all: $(TARGET) 
@@ -26,15 +28,14 @@ $(TARGET): $(sources) MANIFEST.MF
 scraper.exe : scraper.cs
 	mcs -debug scraper.cs
 
+$(API_LEVELS:%=api-%.xml.in): api-%.xml.in: Makefile jar2xml.jar docs-api-% annotations/%.xml
+	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-$*/android.jar --out=$@.tmp --docpath=docs-api-$*/reference --annotations=annotations/$*.xml || exit 1
+	mono-xmltool --prettyprint $@.tmp > $@.tmp2 || exit 1
+	xmlstarlet c14n $@.tmp2 > $@ || exit 1
+	rm $@.tmp $@.tmp2
+
 # test API levels
-
 test-8: api-8.xml.org api-8.xml.in
-
-api-8.xml.in: docs-api-8 annotations/8.xml
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-8/android.jar --out=api-8.xml.tmp --docpath=docs-api-8/reference --annotations=annotations/8.xml || exit 1
-	mono-xmltool --prettyprint api-8.xml.tmp > api-8.xml.tmp2 || exit 1
-	xmlstarlet c14n api-8.xml.tmp2 > api-8.xml.in || exit 1
-	rm api-8.xml.tmp api-8.xml.tmp2
 
 test-9: api-9.xml.org api-9.xml.in
 
@@ -46,20 +47,8 @@ api-9.xml.in: docs-api-9 annotations/9.xml
 
 test-10: api-10.xml.org api-10.xml.in
 
-api-10.xml.in: docs-api-10 annotations/10.xml
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-10/android.jar --out=api-10.xml.tmp --docpath=docs-api-10/reference --annotations=annotations/10.xml || exit 1
-	mono-xmltool --prettyprint api-10.xml.tmp > api-10.xml.tmp2 || exit 1
-	xmlstarlet c14n api-10.xml.tmp2 > api-10.xml.in || exit 1
-	rm api-10.xml.tmp api-10.xml.tmp2
-
 # (This rule is to get diff between 10 and 13.)
 test-13: api-10.xml.org api-13.xml.in
-
-api-13.xml.in: docs-api-13 annotations/13.xml
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-13/android.jar --out=api-13.xml.tmp --docpath=$(ANDROID_SDK_PATH)/docs/reference --annotations=annotations/13.xml || exit 1
-	mono-xmltool --prettyprint api-13.xml.tmp > api-13.xml.tmp2 || exit 1
-	xmlstarlet c14n api-13.xml.tmp2 > api-13.xml.in || exit 1
-	rm api-13.xml.tmp api-13.xml.tmp2
 
 clean-test-8:
 	rm api-8.xml.in annotations/8.xml tmpout/8-deprecated-members.xml
@@ -75,43 +64,43 @@ clean-test-13:
 
 # download and setup docs directory for each API profile
 
-docs-api-8:
-#	$(call get-docs docs-2.2_r01-linux.zip docs-2.2_r01-linux 8)
-	wget http://dl-ssl.google.com/android/repository/docs-2.2_r01-linux.zip || exit 1
-	unzip docs-2.2_r01-linux.zip || exit 1
-	mv docs-2.2_r01-linux docs-api-8
+define extract-docs
+	unzip $1 || exit 1
+	mv $2 $@
+endef
 
-docs-api-9:
-#	$(call get-docs docs-2.3_r01-linux.zip docs-2.3_r01-linux 9)
-	wget http://dl-ssl.google.com/android/repository/docs-2.3_r01-linux.zip || exit 1
-	unzip docs-2.3_r01-linux.zip || exit 1
-	mv docs-2.3_r01-linux docs-api-9
+docs-%.zip:
+	curl http://dl-ssl.google.com/android/repository/$@ > $@ || exit 1
 
-#There should be doc archive for API Level 10, but I cannot find it!
-docs-api-10:
-	ln -s docs-api-9 docs-api-10 || exit 1
+docs-api-8: docs-2.2_r01-linux.zip
+	$(call extract-docs,$<,docs_r01-linux)
 
-docs-api-13:
-#	$(call get-docs docs-3.2_r01-linux.zip docs_r01-linux 13)
-	wget http://dl-ssl.google.com/android/repository/docs-3.2_r01-linux.zip || exit 1
-	unzip docs-3.2_r01-linux.zip || exit 1
-	mv docs_r01-linux docs-api-13
+docs-api-9: docs-2.3_r01-linux.zip
+	$(call extract-docs,$<,docs-2.3_r01-linux)
+
+# API level 10 is Android v2.3.3; it's API level 9 (Android v2.3) with a few
+# bugfixes which don't impact the documentation.
+docs-api-10: docs-2.3_r01-linux.zip
+	$(call extract-docs,$<,docs-2.3_r01-linux)
+
+docs-api-13: docs-3.2_r01-linux.zip
+	$(call extract-docs,$<,docs_r01-linux)
 
 api-%.xml.org:
-	wget --output-document=$@ "http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=api/$(patsubst api-%.xml.org,%.xml,$@);hb=HEAD" || exit 1
+	curl "http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=api/$(patsubst api-%.xml.org,%.xml,$@);hb=HEAD" > $@ || exit 1
 	mono-xmltool --prettyprint $@ > $@.tmp || exit 1
 	xmlstarlet c14n $@.tmp > $@ || exit 1
 	rm $@.tmp
 
 # annotations
 
-annotations/8.xml: scraper.exe docs-api-8 tmpout/8-deprecated-members.xml
+$(API_LEVELS:%=annotations/%.xml): annotations/%.xml: Makefile scraper.exe docs-api-% tmpout/%-deprecated-members.xml
 	mkdir -p annotations
-	mono --debug scraper.exe tmpout/8-deprecated-members.xml docs-api-8/reference/ > annotations/8.xml
+	mono --debug scraper.exe tmpout/$*-deprecated-members.xml docs-api-$*/reference/ > annotations/$*.xml
 
-tmpout/8-deprecated-members.xml : docs-api-8 scraper-main.sh scraper-collector.sh
+$(API_LEVELS:%=tmpout/%-deprecated-members.xml): tmpout/%-deprecated-members.xml: Makefile docs-api-% scraper-main.sh scraper-collector.sh
 	mkdir -p tmpout
-	bash scraper-main.sh docs-api-8/reference > tmpout/8-deprecated-members.xml || exit 1
+	bash scraper-main.sh docs-api-$*/reference > tmpout/$*-deprecated-members.xml || exit 1
 
 annotations/9.xml: scraper.exe docs-api-9 tmpout/9-deprecated-members.xml
 	mkdir -p annotations
@@ -120,22 +109,6 @@ annotations/9.xml: scraper.exe docs-api-9 tmpout/9-deprecated-members.xml
 tmpout/9-deprecated-members.xml : docs-api-9 scraper-main.sh scraper-collector.sh
 	mkdir -p tmpout
 	bash scraper-main.sh docs-api-9/reference > tmpout/9-deprecated-members.xml || exit 1
-
-annotations/10.xml: scraper.exe docs-api-10 tmpout/10-deprecated-members.xml
-	mkdir -p annotations
-	mono --debug scraper.exe tmpout/10-deprecated-members.xml docs-api-10/reference/ > annotations/10.xml
-
-tmpout/10-deprecated-members.xml : docs-api-10 scraper-main.sh scraper-collector.sh
-	mkdir -p tmpout
-	bash scraper-main.sh docs-api-10/reference > tmpout/10-deprecated-members.xml || exit 1
-
-annotations/13.xml: scraper.exe tmpout/13-deprecated-members.xml
-	mkdir -p annotations
-	mono --debug scraper.exe tmpout/13-deprecated-members.xml > annotations/13.xml
-
-tmpout/13-deprecated-members.xml : scraper-main.sh scraper-collector.sh
-	mkdir -p tmpout
-	bash scraper-main.sh > tmpout/13-deprecated-members.xml || exit 1
 
 # generalized solution
 
@@ -151,12 +124,6 @@ tmpout/annot.%.xml.tmp : docs-api-% scraper-main.sh scraper-collector.sh
 	bash scraper-main.sh docs-api-$(patsubst tmpout/annot.%.xml.tmp,%,$@)/reference > $@ || exit 1
 
 # FIXME: these don't work yet
-
-define get-docs
-	wget http://dl-ssl.google.com/android/repository/$1 || exit 1
-	unzip $1 || exit 1
-	mv $2 docs-api-$3
-endef
 
 build-8: api-8.xml
 
