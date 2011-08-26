@@ -36,6 +36,14 @@ api-8.xml.in: docs-api-8 annotations/8.xml
 	xmlstarlet c14n api-8.xml.tmp2 > api-8.xml.in || exit 1
 	rm api-8.xml.tmp api-8.xml.tmp2
 
+test-9: api-9.xml.org api-9.xml.in
+
+api-9.xml.in: docs-api-9 annotations/9.xml
+	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-9/android.jar --out=api-9.xml.tmp --docpath=docs-api-9/reference --annotations=annotations/9.xml || exit 1
+	mono-xmltool --prettyprint api-9.xml.tmp > api-9.xml.tmp2 || exit 1
+	xmlstarlet c14n api-9.xml.tmp2 > api-9.xml.in || exit 1
+	rm api-9.xml.tmp api-9.xml.tmp2
+
 test-10: api-10.xml.org api-10.xml.in
 
 api-10.xml.in: docs-api-10 annotations/10.xml
@@ -55,6 +63,9 @@ api-13.xml.in: docs-api-13 annotations/13.xml
 
 clean-test-8:
 	rm api-8.xml.in annotations/8.xml tmpout/8-deprecated-members.xml
+
+clean-test-9:
+	rm api-9.xml.in annotations/9.xml tmpout/9-deprecated-members.xml
 
 clean-test-10:
 	rm api-10.xml.in annotations/10.xml tmpout/10-deprecated-members.xml
@@ -78,7 +89,7 @@ docs-api-9:
 
 #There should be doc archive for API Level 10, but I cannot find it!
 docs-api-10:
-	ln -s $(ANDROID_SDK_PATH)/docs/ docs-api-10 || exit 1
+	ln -s docs-api-9 docs-api-10 || exit 1
 
 docs-api-13:
 #	$(call get-docs docs-3.2_r01-linux.zip docs_r01-linux 13)
@@ -101,6 +112,14 @@ annotations/8.xml: scraper.exe docs-api-8 tmpout/8-deprecated-members.xml
 tmpout/8-deprecated-members.xml : docs-api-8 scraper-main.sh scraper-collector.sh
 	mkdir -p tmpout
 	bash scraper-main.sh docs-api-8/reference > tmpout/8-deprecated-members.xml || exit 1
+
+annotations/9.xml: scraper.exe docs-api-9 tmpout/9-deprecated-members.xml
+	mkdir -p annotations
+	mono --debug scraper.exe tmpout/9-deprecated-members.xml docs-api-9/reference/ > annotations/9.xml
+
+tmpout/9-deprecated-members.xml : docs-api-9 scraper-main.sh scraper-collector.sh
+	mkdir -p tmpout
+	bash scraper-main.sh docs-api-9/reference > tmpout/9-deprecated-members.xml || exit 1
 
 annotations/10.xml: scraper.exe docs-api-10 tmpout/10-deprecated-members.xml
 	mkdir -p annotations
