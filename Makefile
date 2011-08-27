@@ -1,4 +1,4 @@
-API_LEVELS = 8 10 13
+API_LEVELS = 7 8 10 12 13
 
 TARGET=jar2xml.jar 
 
@@ -35,19 +35,17 @@ $(API_LEVELS:%=api-%.xml.in): api-%.xml.in: Makefile jar2xml.jar docs-api-% anno
 	rm $@.tmp $@.tmp2
 
 # test API levels
+test-7: api-7.xml.org api-7.xml.in
+
 test-8: api-8.xml.org api-8.xml.in
 
 test-9: api-9.xml.org api-9.xml.in
 
-api-9.xml.in: docs-api-9 annotations/9.xml
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-9/android.jar --out=api-9.xml.tmp --docpath=docs-api-9/reference --annotations=annotations/9.xml || exit 1
-	mono-xmltool --prettyprint api-9.xml.tmp > api-9.xml.tmp2 || exit 1
-	xmlstarlet c14n api-9.xml.tmp2 > api-9.xml.in || exit 1
-	rm api-9.xml.tmp api-9.xml.tmp2
-
 test-10: api-10.xml.org api-10.xml.in
 
-# (This rule is to get diff between 10 and 13.)
+# (These rules are to get diff agains 10.)
+test-12: api-10.xml.org api-12.xml.in
+
 test-13: api-10.xml.org api-13.xml.in
 
 clean-test-8:
@@ -58,6 +56,9 @@ clean-test-9:
 
 clean-test-10:
 	rm api-10.xml.in annotations/10.xml tmpout/10-deprecated-members.xml
+
+clean-test-12:
+	rm api-12.xml.in annotations/12.xml tmpout/12-deprecated-members.xml
 
 clean-test-13:
 	rm api-13.xml.in annotations/13.xml tmpout/13-deprecated-members.xml
@@ -72,6 +73,9 @@ endef
 docs-%.zip:
 	curl http://dl-ssl.google.com/android/repository/$@ > $@ || exit 1
 
+docs-api-7: docs-2.1_r01-linux.zip
+	$(call extract-docs,$<,docs-2.1_r01-linux)
+
 docs-api-8: docs-2.2_r01-linux.zip
 	$(call extract-docs,$<,docs_r01-linux)
 
@@ -82,6 +86,9 @@ docs-api-9: docs-2.3_r01-linux.zip
 # bugfixes which don't impact the documentation.
 docs-api-10: docs-2.3_r01-linux.zip
 	$(call extract-docs,$<,docs-2.3_r01-linux)
+
+docs-api-12: docs-3.1_r01-linux.zip
+	$(call extract-docs,$<,docs-3.1_r01-linux)
 
 docs-api-13: docs-3.2_r01-linux.zip
 	$(call extract-docs,$<,docs_r01-linux)
@@ -102,46 +109,3 @@ $(API_LEVELS:%=tmpout/%-deprecated-members.xml): tmpout/%-deprecated-members.xml
 	mkdir -p tmpout
 	bash scraper-main.sh docs-api-$*/reference > tmpout/$*-deprecated-members.xml || exit 1
 
-annotations/9.xml: scraper.exe docs-api-9 tmpout/9-deprecated-members.xml
-	mkdir -p annotations
-	mono --debug scraper.exe tmpout/9-deprecated-members.xml docs-api-9/reference/ > annotations/9.xml
-
-tmpout/9-deprecated-members.xml : docs-api-9 scraper-main.sh scraper-collector.sh
-	mkdir -p tmpout
-	bash scraper-main.sh docs-api-9/reference > tmpout/9-deprecated-members.xml || exit 1
-
-# generalized solution
-
-api_profiles = 4 7 8 10 12 13
-
-# this part seems working fine
-tmpout/annot.%.xml: scraper.exe tmpout/annot.%.xml.tmp
-	mkdir -p tmpout
-	mono --debug scraper.exe $@.tmp docs-api-$(patsubst tmpout/annot.%.xml,%,$@)/reference/ > $@ || exit 1
-
-tmpout/annot.%.xml.tmp : docs-api-% scraper-main.sh scraper-collector.sh
-	mkdir -p tmpout
-	bash scraper-main.sh docs-api-$(patsubst tmpout/annot.%.xml.tmp,%,$@)/reference > $@ || exit 1
-
-# FIXME: these don't work yet
-
-build-8: api-8.xml
-
-build-9: api-9.xml
-
-build-10: api-10.xml
-
-build-12: api-12.xml
-
-build-13: api-13.xml
-
-api-%.xml: docs-api-% api-%.xml.org tmpout/annot.%.xml
-	$(call run-build $(patsubst api-%.xml,%,$@))
-
-define run-build
-	@echo running build for API Level $1
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-$1/android.jar --out=api-$1.xml --docpath=docs-api-$1/reference --annotations=tmpout/annot.$1.xml || exit 1
-	mono-xmltool --prettyprint api-$1.xml > api-$1.xml.tmp || exit 1
-	xmlstarlet c14n api-$1.xml.tmp > api-$1.xml || exit 1
-	rm api-$1.xml.tmp
-endef
