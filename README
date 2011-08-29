@@ -66,12 +66,14 @@ and associated documentation.  The information is stored in XML format.
 
 * TODO
 
-** could be resolved after preview - before release
+** Postponed
 
 - java.security.Provider.put() : missing in jar2xml output.
-  maybe disappeared in the shade of Hashtable.put().
-
-** Postponed
+  Disappeared in the shade of Hashtable.put().
+  -> workarounded by explicitly excluding the case (hardcoded in jar2xml!)
+     This issue should rather get fixed by improving overrload resolution
+     in XML level i.e. change XML format to include *any* overloaded methods
+     that AOSP XML does not do.
 
 - java.net.ssl.KeyStoreBuilderParameters.Parameters and .ctor() : types differ
   - generic list

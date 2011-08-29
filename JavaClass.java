@@ -468,8 +468,14 @@ public class JavaClass implements Comparable<JavaClass> {
 					int base_mods = base_method.getModifiers ();
 					int base_decl_class_mods = base_method.getDeclaringClass ().getModifiers (); // This is to not exclude methods that are excluded in the base type by modifiers (e.g. some AbstractStringBuilder methods)
 					if (!Modifier.isStatic (base_mods) && !Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)) && Modifier.isPublic (base_decl_class_mods)) {
-						if (!Modifier.isAbstract (mmods) || method.getName ().equals ("finalize")) // this is to not exclude some "override-as-abstract"  methods e.g. android.net.Uri.toString(), android.view.ViewGroup.onLayout()
-							continue;
+						// this is to not exclude some "override-as-abstract"  methods e.g. android.net.Uri.toString(), android.view.ViewGroup.onLayout().
+						if (!Modifier.isAbstract (mmods) || method.getName ().equals ("finalize")) {
+							// FIXME: This is the only one workaround for overriden and missing method i.e. do not exclude java.security.Provider.put().
+							// If we remove this entire check, it causes property override conflicts (e.g. base has both getter and setter and becomes property, this derived class only has the overriden setter and becomes), so we don't want to simply do it.
+
+							if (!method.getName ().equals ("put") || !jclass.getName ().equals ("java.security.Provider"))
+								continue;
+						}
 					}
 				}
 			}
