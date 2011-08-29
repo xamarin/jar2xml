@@ -191,7 +191,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (type == "long")
 					e.setAttribute ("value", String.format ("%dL", asmField.value));
 				else if (type == "float")
-					e.setAttribute ("value", String.format ("%f", isPublic ? field.getFloat (null) : asmField.value));
+					e.setAttribute ("value", String.format ("%f", asmField.value));
 				else if (type == "double") {
 					// see java.lang.Double constants.
 					double dvalue = (Double) asmField.value;
@@ -215,7 +215,7 @@ public class JavaClass implements Comparable<JavaClass> {
 					e.setAttribute ("value", svalue);
 				}
 				else if (type == "boolean")
-					e.setAttribute ("value", 0 == (Integer) asmField.value ? "true" : "false");
+					e.setAttribute ("value", 0 == (Integer) asmField.value ? "false" : "true");
 				else if (type == "java.lang.String") {
 					String value = (String) asmField.value;
 					if (value != null)
