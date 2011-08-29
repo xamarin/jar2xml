@@ -66,16 +66,8 @@ and associated documentation.  The information is stored in XML format.
 
 * TODO
 
-** should be resolved before preview
-
-- Some constant mismatch:
-  - android.hardware.SensorManager : GRAVITY_DEATH_STAR_I
-  - android.util.Config : Logd, Logv, Profile
-  - android.view.ViewDebug : TRACE_HIERARCHY and TRACE_RECYCLER
-
 ** could be resolved after preview - before release
 
-- java.nio.*Buffer : arrayOffset() are not final but should be final.
 - android.widget.Filter : CharSequence and string issue
   (probably too strong method filtering in jar2xml)
 - java.security.Provider.put() : missing in jar2xml output.
@@ -89,6 +81,17 @@ and associated documentation.  The information is stored in XML format.
   - javax.net.ssl.SSLSocketFactory.getDefault() too
 
 ** Postponed
+
+- Now there are some abstract methods that somehow lacked in AOSP XML
+  and it uncovered issues regarding overriden methods. While those overriden
+  methods are sometimes "final", which should be "sealed", they are not
+  marked as sealed. And we cannot mark them as sealed right now since
+  those methods are *overriden* in *Invoker classes.
+  e.g. java.nio.Buffer.arrayOffset() and those overriden methods in *Buffer.
+
+- android.hardware.SensorManager.GRAVITY_DEATH_STAR_I always returns 0
+  - while reference and AOSP indicates value, it returns 0 on reflection,
+    asm or even on ASUS Transformer.
 
 - android.test.MoreAsserts.assertEquals(Set<?>, Set<?>).
   They are just XML difference between <?> (wrong) and <? extends Object>
