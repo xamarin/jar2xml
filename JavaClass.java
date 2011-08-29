@@ -438,13 +438,16 @@ public class JavaClass implements Comparable<JavaClass> {
 				continue; // Some non-standard flag seems to detect non-declared method on the source e.g. AbstractStringBuilder.append(char)
 			}
 
-			if (!Modifier.isPublic (method.getReturnType ().getModifiers ()))
+			int rtmods = method.getReturnType ().getModifiers ();
+			if (!Modifier.isPublic (rtmods) && !Modifier.isProtected (rtmods))
 				continue;
 			boolean nonPublic = false;
 			Class [] ptypes = method.getParameterTypes ();
-			for (int pidx = 0; pidx < ptypes.length; pidx++)
-				if (!Modifier.isPublic (ptypes [pidx].getModifiers ()))
+			for (int pidx = 0; pidx < ptypes.length; pidx++) {
+				int ptmods = ptypes [pidx].getModifiers ();
+				if (!Modifier.isPublic (ptmods) && !Modifier.isProtected (ptmods))
 					nonPublic = true;
+			}
 			if (nonPublic)
 				continue;
 

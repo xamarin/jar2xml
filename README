@@ -68,8 +68,6 @@ and associated documentation.  The information is stored in XML format.
 
 ** could be resolved after preview - before release
 
-- android.widget.Filter : CharSequence and string issue
-  (probably too strong method filtering in jar2xml)
 - java.security.Provider.put() : missing in jar2xml output.
   maybe disappeared in the shade of Hashtable.put().
 - java.net.ssl.KeyStoreBuilderParameters.Parameters and .ctor() : types differ
