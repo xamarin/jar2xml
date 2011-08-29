@@ -467,7 +467,7 @@ public class JavaClass implements Comparable<JavaClass> {
 					// Removing this entire block however results in more confusion. See README.
 					int base_mods = base_method.getModifiers ();
 					int base_decl_class_mods = base_method.getDeclaringClass ().getModifiers (); // This is to not exclude methods that are excluded in the base type by modifiers (e.g. some AbstractStringBuilder methods)
-					if (!Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)) && Modifier.isPublic (base_decl_class_mods)) {
+					if (!Modifier.isStatic (base_mods) && !Modifier.isAbstract (base_mods) && (Modifier.isPublic (mmods) == Modifier.isPublic (base_mods)) && Modifier.isPublic (base_decl_class_mods)) {
 						if (!Modifier.isAbstract (mmods) || method.getName ().equals ("finalize")) // this is to not exclude some "override-as-abstract"  methods e.g. android.net.Uri.toString(), android.view.ViewGroup.onLayout()
 							continue;
 					}
