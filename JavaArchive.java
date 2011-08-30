@@ -43,15 +43,17 @@ public class JavaArchive {
 	private JarFile file;
 	private ClassLoader loader;
 
-	public JavaArchive (String filename) throws Exception
+	public JavaArchive (String filename, List<String> additionalJars) throws Exception
 	{
 		URL url = new File (filename).getAbsoluteFile ().toURL ();
+		List<URL> urls = new ArrayList<URL> ();
+		urls.add (url);
+		for (String additionalJar : additionalJars)
+			urls.add (new File (additionalJar).getAbsoluteFile ().toURL ());
 		file = new JarFile (filename);
-		try {
-			loader = new URLClassLoader (new URL[] { url }, JavaArchive.class.getClassLoader ());
-		} catch (Throwable t) {
-			throw new Exception ();
-		}
+		URL [] urlsArray = new URL [urls.size ()];
+		urls.toArray (urlsArray);
+		loader = new URLClassLoader (urlsArray, JavaArchive.class.getClassLoader ());
 	}
 
 	public List<JavaPackage> getPackages ()

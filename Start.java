@@ -27,6 +27,8 @@ package jar2xml;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
+import java.util.List;
+import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -90,6 +92,7 @@ public class Start {
 		String annots = null;
 		String jar_path = null;
 		String out_path = null;
+		List<String> additional_jar_paths = new ArrayList<String> ();
 		String usage = "Usage: jar2xml --jar=<jarfile> --out=<file> [--docpath=<javadocs>] [--annotations=<xmlfile>]";
 
 		for (String arg : args) {
@@ -99,6 +102,8 @@ public class Start {
 				annots = arg.substring (14);
 			} else if (arg.startsWith ("--jar=")) {
 				jar_path = arg.substring (6);
+			} else if (arg.startsWith ("--ref=")) {
+				additional_jar_paths.add (arg.substring (6));
 			} else if (arg.startsWith ("--out=")) {
 				out_path = arg.substring (6);
 			} else {
@@ -114,9 +119,9 @@ public class Start {
 
 		JavaArchive jar = null;
 		try {
-			jar = new JavaArchive (jar_path);
+			jar = new JavaArchive (jar_path, additional_jar_paths);
 		} catch (Exception e) {
-			System.err.println ("Couldn't open java archive at specified path " + jar_path);
+			System.err.println ("Couldn't open java archive at specified path " + jar_path + " : " + e);
 			System.exit (1);
 		}
 
