@@ -30,6 +30,7 @@ import java.util.regex.*;
 import java.util.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
+import org.objectweb.asm.tree.*;
 
 public class AndroidDocScraper implements IDocScraper {
 
@@ -53,9 +54,9 @@ public class AndroidDocScraper implements IDocScraper {
 			throw new IllegalArgumentException (dir.getAbsolutePath() + " does not appear to be an android doc reference directory.");
 	}
 
-	public String[] getParameterNames (Class declarer, String name, Type[] ptypes, boolean isVarArgs)
+	public String[] getParameterNames (ClassNode asm, String name, Type[] ptypes, boolean isVarArgs)
 	{
-		String path = declarer.getName ().replace('.', '/').replace ('$', '.') + ".html";
+		String path = asm.name.replace ('$', '.') + ".html";
 		File file = new File(root.getPath() + "/" + path);
 		if (!file.isFile ())
 			return null;
@@ -137,23 +138,17 @@ public class AndroidDocScraper implements IDocScraper {
 		}
 	}
 	
-	public static List<String> getDeprecatedFields (Class cls)
+	public static List<String> getDeprecatedFields (ClassNode asm)
 	{
 		if (deprecatedFields == null)
 			return null;
-		String name = cls.getName ();
-		String pkg = cls.getPackage ().getName ();
-		name = pkg.replace (".", "/") + "/" + name.substring (pkg.length () + 1).replace ("$", "."); // foo/bar/Baz.Nested
-		return deprecatedFields.get (name);
+		return deprecatedFields.get (asm.name.replace ('$', '.'));
 	}
 	
-	public static List<String> getDeprecatedMethods (Class cls)
+	public static List<String> getDeprecatedMethods (ClassNode asm)
 	{
 		if (deprecatedMethods == null)
 			return null;
-		String name = cls.getName ();
-		String pkg = cls.getPackage ().getName ();
-		name = pkg.replace (".", "/") + "/" + name.substring (pkg.length () + 1).replace ("$", "."); // foo/bar/Baz.Nested
-		return deprecatedMethods.get (name);
+		return deprecatedMethods.get (asm.name.replace ('$', '.'));
 	}
 }

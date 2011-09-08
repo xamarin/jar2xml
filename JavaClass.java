@@ -47,6 +47,8 @@ import org.objectweb.asm.tree.*;
 
 public class JavaClass implements Comparable<JavaClass> {
 
+	public static Map<String,ClassNode> asmClasses = new HashMap<String,ClassNode> ();
+
 	private Class jclass;
 	private ClassNode asm;
 	private Map<String,FieldNode> asmFields;
@@ -56,8 +58,9 @@ public class JavaClass implements Comparable<JavaClass> {
 	public JavaClass (Class jclass, ClassNode asm)
 	{
 		this.jclass = jclass;
-		deprecatedFields = AndroidDocScraper.getDeprecatedFields (jclass);
-		deprecatedMethods = AndroidDocScraper.getDeprecatedMethods (jclass);
+		this.asm = asm;
+		deprecatedFields = AndroidDocScraper.getDeprecatedFields (asm);
+		deprecatedMethods = AndroidDocScraper.getDeprecatedMethods (asm);
 		asmFields = new HashMap<String,FieldNode> ();
 
 		for (FieldNode fn : (List<FieldNode>) asm.fields)
@@ -71,13 +74,13 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	public String getName ()
 	{
-		return jclass.getName ();
+		return asm.name.replace ('/', '.');
 	}
 
 	String[] getParameterNames (String name, Type[] types, boolean isVarArgs)
 	{
 		for (IDocScraper s : scrapers) {
-			String[] names = s.getParameterNames (jclass, name, types, isVarArgs);
+			String[] names = s.getParameterNames (asm, name, types, isVarArgs);
 			if (names != null && names.length > 0)
 				return names;
 		}
@@ -104,13 +107,18 @@ public class JavaClass implements Comparable<JavaClass> {
 		}
 	}
 	
-	String getConstructorName (Class c)
+	String getSimpleName (ClassNode asm)
+	{
+		return asm.name.substring (asm.name.lastIndexOf ('/') + 1).replace ('$', '.');
+	}
+	
+	String getConstructorName (ClassNode asm)
 	{
 		String n = "";
-		Class e = c.getEnclosingClass ();
+		ClassNode e = asmClasses.get (asm.outerClass);
 		if (e != null)
 			n = getConstructorName (e);
-		return (n != "" ? n + "." : n) + c.getSimpleName ();
+		return (n != "" ? n + "." : n) + getSimpleName (asm);
 	}
 
 	void appendCtor (Constructor ctor, Document doc, Element parent)
@@ -119,7 +127,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
 			return;
 		Element e = doc.createElement ("constructor");
-		e.setAttribute ("name", getConstructorName (jclass));
+		e.setAttribute ("name", getConstructorName (asm));
 		e.setAttribute ("type", getClassName (jclass, true));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
@@ -518,12 +526,31 @@ public class JavaClass implements Comparable<JavaClass> {
 			appendMethod (methods.get (sig), doc, e);
 
 		if (!jclass.isEnum ()) { // enums are somehow skipped.
-			Field [] fields = jclass.getDeclaredFields ();
+			Field [] fields = getDeclaredFields ();
 			sortFields (fields);
 			for (Field field : fields)
 				appendField (field, asmFields.get (field.getName ()), doc, e);
 		}
 		parent.appendChild (e);
+	}
+	
+	static final Field [] empty_array = new Field [0];
+
+	Field [] getDeclaredFields ()
+	{
+		try {
+			return jclass.getDeclaredFields ();
+		} catch (NoClassDefFoundError ex) {
+			List<Field> l = new ArrayList<Field> ();
+			for (FieldNode fn : asm.fields) {
+				try {
+					l.add (jclass.getField (fn.name));
+				} catch (NoClassDefFoundError exx) {
+				} catch (NoSuchFieldException exx) {
+				}
+			}
+			return l.toArray (empty_array);
+		}
 	}
 
 	void sortFields (Field [] fields)

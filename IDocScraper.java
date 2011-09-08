@@ -25,9 +25,10 @@
 package jar2xml;
 
 import java.lang.reflect.Type;
+import org.objectweb.asm.tree.ClassNode;
 
 public interface IDocScraper {
 
-	String[] getParameterNames (Class declarer, String name, Type[] ptypes, boolean isVarArgs);
+	String[] getParameterNames (ClassNode declarer, String name, Type[] ptypes, boolean isVarArgs);
 
 }

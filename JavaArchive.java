@@ -70,6 +70,7 @@ public class JavaArchive {
 					ClassReader reader = new ClassReader (stream);
 					ClassNode node = new ClassNode ();
 					reader.accept (node, 0);
+					JavaClass.asmClasses.put (node.name, node);
 					
 					Class c = loader.loadClass (name.replace ('/', '.'));
 					//String pkgname = c.getPackage ().getName ();
