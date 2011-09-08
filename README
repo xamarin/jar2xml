@@ -48,8 +48,6 @@ and associated documentation.  The information is stored in XML format.
 
   see e.g. android.accounts.AccountManagerCallback<V>
 
-  This will lead to huge reduction on monodroid/Mono.Android/metadata.
-
   There are some cases that we dare output type parameters embedded
   into type name (basically those in XML attributes):
   
@@ -101,6 +99,33 @@ and associated documentation.  The information is stored in XML format.
   They are not in jar2xml output either, maybe added by api fixup stage.
   (First and Second are looking as extra, but they were rather missing)
 
+** things changes are maybe preferred
+ 
+*** int->enum
+
+- Android.App.DownloadManager
+- Android.Appwidget.AppWidgetManager
+- Android.Bluetooth.BluetoothA2dp
+- Android.Bluetooth.BluetoothHeadset
+- Android.Content.PM.PackageManager
+- Android.Content.Res.Configuration
+- Android.Database.Sqlite.SQLiteDatabase
+- Android.Graphics.PowerDuff.Mode
+- Android.Media.AudioManager.ScoAudioState*
+- Android.OS.BatteryManager
+- Android.Views.InputDevice
+- Android.Views.View.Measured*
+- Android.Views.Window.Progress*
+- Android.Views.Window.WindowManagerLayoutParams
+- Android.Views.View.SystemUiVisibilityChangeEventArgs has int Visibility
+  which should be StatusBarVisibility.
+- Android.Widget.OnScrollListenerConsts
+
+*** methods->properties
+
+- Android.App.Admin.DevicePolicyManager: there are lots of GetPassword*() and
+  SetPassword*() methods which we might be able to change to indexers.
+
 * Notes (that you don't have to read)
 
 ** API difference between android.jar and J2SE
@@ -114,32 +139,7 @@ These API differences could be problematic when we reflect java system types (re
 ** AOSP XML issues
 
 Lots of missing pieces:
-- javax.security.auth.x500.X500Principal
-  .ctor(string,Map<string,string>) and getName(string,Map<string,string>)
-- javax.net.ssl.SSLContext.Default is missing.
-- java.util.Arrays : copyOf() and binarySearch(T[],int,int,T).
-- java.util.Calendar.getDisplayNames(), ALL_STYLES, LONG, SHORT
-- java.util.Locale.ROOT
-- java.util.Properties : stringPropertyNames(), load(Reader), store(Writer)
-- java.util.PropertyResourceBundle.ctor(Reader)
-- java.util.ResourceBundle : containsKey(), handleKeySet(), keySet(),
-  clearCache(), clearCache(ClassLoader)
-- java.security.Provider : getProvider(), getType(), 
-  UNSUPPORTED_EMPTY_COLLECTION
-- java.net.NetworkInterface : getMTU(), isLoopback(), isUp() ... many
-- java.lang.StringBuffer and java.lang.StringBuilder miss lots of methods.
-  (They are likely in AbstractStringBuilder.)
-- java.lang.Math : copySign(), nextAfter(), nextUp(), scalb(), getExponent()
-- java.lang.Double and java.lang.Float : MAX_EXPONENT, MIN_EXPONENT, MIN_NORMAL
-- java.io.PrintStream.clearError() and java.io.PrintWriter.clearError()
-- java.io.PipedReader : .ctor(PipedWriter,int) and .ctor(int)
-- java.io.ObjectStreamClass.lookupAny(Class)
-- java.io.Throwable : .ctor(Throwable) and .ctor(string,Throwable)
-- java.io.File : canExecute(), setExecutable(), setReadable(), setWritable(),
-  getFreeSpace(), getTotalSpace(), getUsableSpace()
-
-java.security.Policy : refresh() and getPermissions() are marked as abstract,
-but they are not (confirmed in API reference and libcore/luni).
+http://code.google.com/p/android/issues/detail?id=19569
 
 ** Notes on Annotations
 
@@ -305,6 +305,8 @@ Now we use ASM to solve the issues below:
   exist in api-4.xml. It is likely because abstract methods are
   ignored (it is abstract, though that fact does not appear on
   android javadoc).
+
+  android.view.MotionEvent.getSource() is also missing.
 </maybe-historical>
 
 ** Erased generic issues
