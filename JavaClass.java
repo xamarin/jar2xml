@@ -350,7 +350,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		for (TypeVariable<?> tp : tps) {
 			Element tp_elem = doc.createElement ("typeParameter");
 			tp_elem.setAttribute ("name", tp.getName ());
-			if (tp.getBounds ().length != 1 || tp.getBounds () [0].equals (Object.class)) {
+			if (tp.getBounds ().length != 1 || !tp.getBounds () [0].equals (Object.class)) {
 				Element tcs_elem = doc.createElement ("genericConstraints");
 				for (Type tc : tp.getBounds ()) {
 					if (tc.equals (Object.class))
