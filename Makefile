@@ -1,4 +1,4 @@
-API_LEVELS = 7 8 10 12 13
+API_LEVELS = 4 7 8 10 12 13
 
 TARGET=jar2xml.jar 
 
@@ -35,6 +35,8 @@ $(API_LEVELS:%=api-%.xml.in): api-%.xml.in: Makefile jar2xml.jar docs-api-% anno
 	rm $@.tmp $@.tmp2
 
 # test API levels
+test-4: api-4.xml.org api-4.xml.in
+
 test-7: api-7.xml.org api-7.xml.in
 
 test-8: api-8.xml.org api-8.xml.in
@@ -72,6 +74,10 @@ endef
 
 docs-%.zip:
 	curl http://dl-ssl.google.com/android/repository/$@ > $@ || exit 1
+
+# we couldn't find doc archive for Lv.4, so reusing Lv.7 archive here...
+docs-api-4: docs-2.1_r01-linux.zip
+	$(call extract-docs,$<,docs-2.1_r01-linux)
 
 docs-api-7: docs-2.1_r01-linux.zip
 	$(call extract-docs,$<,docs-2.1_r01-linux)
