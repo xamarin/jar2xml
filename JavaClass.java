@@ -248,10 +248,9 @@ public class JavaClass implements Comparable<JavaClass> {
 			return;
 		Element e = doc.createElement ("method");
 		e.setAttribute ("name", method.getName ());
-		// FIXME: at some stage we'd like to use generic name.
-		//Element typeParameters = getTypeParametersNode (doc, method.getTypeParameters ());
-		//if (typeParameters != null)
-		//	e.appendChild (typeParameters);
+		Element typeParameters = getTypeParametersNode (doc, method.getTypeParameters ());
+		if (typeParameters != null)
+			e.appendChild (typeParameters);
 
 		e.setAttribute ("return", getGenericTypeName (method.getGenericReturnType ()));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
