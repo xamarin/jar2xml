@@ -420,15 +420,22 @@ public class JavaClass implements Comparable<JavaClass> {
 			e.appendChild (typeParameters);
 
 		setDeprecatedAttr (e, jclass.getDeclaredAnnotations (), e.getAttribute ("name"));
-		// FIXME: at some stage we'd like to use generic name.
-		//Type [] ifaces = jclass.getGenericInterfaces ();
-		Class [] ifaces = jclass.getInterfaces ();
+		// generic-aware name is required when we resolve types.
+		Type [] ifaces = jclass.getGenericInterfaces ();
+		//Class [] ifaces = jclass.getInterfaces ();
 		sortTypes (ifaces);
-		for (Class iface : ifaces) {
+		for (Type iface : ifaces) {
 			Element iface_elem = doc.createElement ("implements");
-			// FIXME: at some stage we'd like to use generic name.
-			//iface_elem.setAttribute ("name", getGenericTypeName (iface));
-			iface_elem.setAttribute ("name", getClassName (iface, true));
+			if (iface instanceof Class)
+				iface_elem.setAttribute ("name", getClassName ((Class) iface, true));
+			else if (iface instanceof ParameterizedType) {
+				ParameterizedType pt = (ParameterizedType) iface;
+				if (pt.getRawType () instanceof Class)
+				iface_elem.setAttribute ("name", getClassName (((Class) pt.getRawType ()), true));
+			} // else ... of course there are other cases, but we will only use generic-aware name in the future. It is only for backward compatibility.
+
+			// generic-aware name is required when we resolve types.
+			iface_elem.setAttribute ("name-generic-aware", getGenericTypeName (iface));
 			iface_elem.appendChild (doc.createTextNode ("\n"));
 			e.appendChild (iface_elem);
 		}
