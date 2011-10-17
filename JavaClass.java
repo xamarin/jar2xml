@@ -197,9 +197,15 @@ public class JavaClass implements Comparable<JavaClass> {
 					e.setAttribute ("value", String.format ("%d", asmField.value));
 				else if (type == "long")
 					e.setAttribute ("value", String.format ("%dL", asmField.value));
-				else if (type == "float")
-					e.setAttribute ("value", String.format ("%f", asmField.value));
-				else if (type == "double") {
+				else if (type == "float") {
+					double fvalue = (Float) asmField.value;
+					String svalue;
+					if (fvalue == Float.MIN_NORMAL)
+						svalue = "1.17549435E-38";
+					else
+						svalue = String.format ("%f", asmField.value);
+					e.setAttribute ("value", svalue);
+				} else if (type == "double") {
 					// see java.lang.Double constants.
 					double dvalue = (Double) asmField.value;
 					String svalue;
@@ -208,6 +214,8 @@ public class JavaClass implements Comparable<JavaClass> {
 						svalue = "1.7976931348623157E308";
 					else if (dvalue == Double.MIN_VALUE)
 						svalue = "4.9E-324";
+					else if (dvalue == Double.MIN_NORMAL)
+						svalue = "2.2250738585072014E-308";
 					else if (Double.isNaN (dvalue))
 						svalue = "(0.0 / 0.0)";
 					else if (dvalue == Double.POSITIVE_INFINITY)
@@ -402,8 +410,9 @@ public class JavaClass implements Comparable<JavaClass> {
 			Type t = jclass.getGenericSuperclass ();
 			if (t != null)
 				e.setAttribute ("extends-generic-aware", getGenericTypeName (t));
-			if (t instanceof Class)
-				e.setAttribute ("extends", getClassName ((Class) t, true));
+			Class t2 = jclass.getSuperclass ();
+			if (t2 != null)
+				e.setAttribute ("extends", getClassName (t2, true));
 		}
 
 		e.setAttribute ("name", getClassName (jclass, false));
