@@ -158,8 +158,7 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		Element e = doc.createElement ("field");
 		e.setAttribute ("name", field.getName ());
-		// FIXME: at some stage we'd like to use generic name.
-		//e.setAttribute ("type", getGenericTypeName (field.getGenericType ()));
+		e.setAttribute ("type-generic-aware", getGenericTypeName (field.getGenericType ()));
 		e.setAttribute ("type", getClassName (field.getType (), true));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
@@ -400,13 +399,11 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		Element e = doc.createElement (jclass.isInterface () && !jclass.isAnnotation () ? "interface" : "class");
 		if (!jclass.isInterface () || jclass.isAnnotation ()) {
-			// FIXME: at some stage we'd like to use generic name.
-			//Type t = jclass.getGenericSuperclass ();
-			//if (t != null)
-			//	e.setAttribute ("extends", getGenericTypeName (t));
-			Class t = jclass.getSuperclass ();
+			Type t = jclass.getGenericSuperclass ();
 			if (t != null)
-				e.setAttribute ("extends", getClassName (t, true));
+				e.setAttribute ("extends-generic-aware", getGenericTypeName (t));
+			if (t instanceof Class)
+				e.setAttribute ("extends", getClassName ((Class) t, true));
 		}
 
 		e.setAttribute ("name", getClassName (jclass, false));
