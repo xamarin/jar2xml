@@ -32,14 +32,40 @@ import javax.xml.parsers.*;
 import org.w3c.dom.*;
 import org.objectweb.asm.tree.*;
 
-public class AndroidDocScraper implements IDocScraper {
+class DroidDocScraper extends AndroidDocScraper {
+	static final String pattern_head_droiddoc = "<span class=\"sympad\"><a href=\".*";
+
+	public DroidDocScraper (File dir) throws IOException {
+		super (dir, pattern_head_droiddoc, null, null);
+	}
+}
+
+class JavaDocScraper extends AndroidDocScraper {
+	static final String pattern_head_javadoc = "<TD><CODE><B><A HREF=\"../../../../";
+	static final String reset_pattern_head_javadoc = "<TD><CODE>";
+	static final String parameter_pair_splitter_javadoc = "&nbsp;";
+
+	public JavaDocScraper (File dir) throws IOException {
+		super (dir, pattern_head_javadoc, reset_pattern_head_javadoc, parameter_pair_splitter_javadoc);
+	}
+}
+
+public abstract class AndroidDocScraper implements IDocScraper {
+
+	final String pattern_head;
+	final String reset_pattern_head;
+	final String parameter_pair_splitter;
 
 	File root;
 
-	public AndroidDocScraper (File dir) throws IOException {
+	protected AndroidDocScraper (File dir, String patternHead, String resetPatternHead, String parameterPairSplitter) throws IOException {
 
 		if (dir == null)
 			throw new IllegalArgumentException ();
+
+		pattern_head = patternHead;
+		reset_pattern_head = resetPatternHead;
+		parameter_pair_splitter = parameterPairSplitter != null ? parameterPairSplitter : "\\s+";
 
 		if (!dir.exists())
 			throw new FileNotFoundException (dir.getAbsolutePath());
@@ -62,7 +88,7 @@ public class AndroidDocScraper implements IDocScraper {
 			return null;
 
 		StringBuffer buffer = new StringBuffer ();
-		buffer.append ("<span class=\"sympad\"><a href=\".*");
+		buffer.append (pattern_head);
 		buffer.append (path);
 		buffer.append ("#");
 		buffer.append (name);
@@ -83,8 +109,11 @@ public class AndroidDocScraper implements IDocScraper {
 			InputStreamReader rdr;
 			rdr = new InputStreamReader (stream, "UTF-8");
 			BufferedReader br = new BufferedReader (rdr);
-			String text;
+			String text = "";
+			String prev = null;
 			while ((text = br.readLine ()) != null) {
+				if (prev != null)
+					prev = text = prev + text;
 				Matcher matcher = pattern.matcher (text);
 				if (matcher.find ()) {
 					String plist = matcher.group (1);
@@ -93,11 +122,18 @@ public class AndroidDocScraper implements IDocScraper {
 						System.err.println ("failed matching " + buffer.toString ());
 					String[] result = new String [ptypes.length];
 					for (int i = 0; i < ptypes.length; i++) {
-						String[] toks = parms [i].split ("\\s+");
+						String[] toks = parms [i].split (parameter_pair_splitter);
 						result [i] = toks [toks.length - 1];
 					}
+					stream.close();
 					return result;
 				}
+				// sometimes we get incomplete tag, so cache it until it gets complete or matched.
+				// I *know* this is a hack.
+				if (reset_pattern_head == null || text.endsWith (">") || !text.startsWith (reset_pattern_head))
+					prev = null;
+				else
+					prev = text;
 			}
 			stream.close();
 		} catch (Exception e) {

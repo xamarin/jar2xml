@@ -88,16 +88,19 @@ public class Start {
 
 	public static void main (String[] args)
 	{
-		String docs = null;
+		String droiddocs = null;
+		String javadocs = null;
 		String annots = null;
 		String jar_path = null;
 		String out_path = null;
 		List<String> additional_jar_paths = new ArrayList<String> ();
-		String usage = "Usage: jar2xml --jar=<jarfile> --out=<file> [--docpath=<javadocs>] [--annotations=<xmlfile>]";
+		String usage = "Usage: jar2xml --jar=<jarfile> --out=<file> [--javadocpath=<javadoc>] [--droiddocpath=<droiddoc>] [--annotations=<xmlfile>]";
 
 		for (String arg : args) {
-			if (arg.startsWith ("--docpath=")) {
-				docs = arg.substring (10);
+			if (arg.startsWith ("--javadocpath=")) {
+				javadocs = arg.substring (14);
+			} else if (arg.startsWith ("--droiddocpath=")) {
+				droiddocs = arg.substring (15);
 			} else if (arg.startsWith ("--annotations=")) {
 				annots = arg.substring (14);
 			} else if (arg.startsWith ("--jar=")) {
@@ -128,8 +131,10 @@ public class Start {
 		try {
 			if (annots != null)
 				AndroidDocScraper.loadXml (annots);
-			if (docs != null)
-				JavaClass.addDocScraper (new AndroidDocScraper (new File (docs)));
+			if (droiddocs != null)
+				JavaClass.addDocScraper (new DroidDocScraper (new File (droiddocs)));
+			if (javadocs != null)
+				JavaClass.addDocScraper (new JavaDocScraper (new File (javadocs)));
 		} catch (Exception e) {
 			System.err.println ("Couldn't access javadocs at specified docpath.  Continuing without it...");
 		}

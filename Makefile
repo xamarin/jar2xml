@@ -29,7 +29,7 @@ scraper.exe : scraper.cs
 	mcs -debug scraper.cs
 
 $(API_LEVELS:%=api-%.xml.in): api-%.xml.in: Makefile jar2xml.jar docs-api-% annotations/%.xml
-	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-$*/android.jar --out=$@.tmp --docpath=docs-api-$*/reference --annotations=annotations/$*.xml || exit 1
+	java -jar jar2xml.jar --jar=$(ANDROID_SDK_PATH)/platforms/android-$*/android.jar --out=$@.tmp --droiddocpath=docs-api-$*/reference --annotations=annotations/$*.xml || exit 1
 	mono-xmltool --prettyprint $@.tmp > $@.tmp2 || exit 1
 	xmlstarlet c14n $@.tmp2 > $@ || exit 1
 	rm $@.tmp $@.tmp2
