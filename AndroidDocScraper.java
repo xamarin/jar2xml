@@ -41,7 +41,7 @@ class DroidDocScraper extends AndroidDocScraper {
 }
 
 class JavaDocScraper extends AndroidDocScraper {
-	static final String pattern_head_javadoc = "<TD><CODE><B><A HREF=\"../../../../";
+	static final String pattern_head_javadoc = "<TD><CODE><B><A HREF=\"[./]*"; // I'm not sure how path could be specified... (./ , ../ , or even /)
 	static final String reset_pattern_head_javadoc = "<TD><CODE>";
 	static final String parameter_pair_splitter_javadoc = "&nbsp;";
 
