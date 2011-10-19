@@ -1,4 +1,4 @@
-API_LEVELS = 4 7 8 10 12 13
+API_LEVELS = 4 7 8 10 12 13 14
 
 TARGET=jar2xml.jar 
 
@@ -50,6 +50,8 @@ test-12: api-10.xml.org api-12.xml.in
 
 test-13: api-10.xml.org api-13.xml.in
 
+test-14: api-10.xml.org api-14.xml.in
+
 clean-test-8:
 	rm api-8.xml.in annotations/8.xml tmpout/8-deprecated-members.xml
 
@@ -64,6 +66,9 @@ clean-test-12:
 
 clean-test-13:
 	rm api-13.xml.in annotations/13.xml tmpout/13-deprecated-members.xml
+
+clean-test-14:
+	rm api-14.xml.in annotations/14.xml tmpout/14-deprecated-members.xml
 
 # download and setup docs directory for each API profile
 
@@ -98,6 +103,9 @@ docs-api-12: docs-3.1_r01-linux.zip
 
 docs-api-13: docs-3.2_r01-linux.zip
 	$(call extract-docs,$<,docs_r01-linux)
+
+docs-api-14: docs-14_r01.zip
+	$(call extract-docs,$<,docs)
 
 api-%.xml.org:
 	curl "http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=api/$(patsubst api-%.xml.org,%.xml,$@);hb=HEAD" > $@ || exit 1
