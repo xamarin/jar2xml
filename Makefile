@@ -108,10 +108,11 @@ docs-api-14: docs-14_r01.zip
 	$(call extract-docs,$<,docs)
 
 api-%.xml.org:
-	curl "http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=api/$(patsubst api-%.xml.org,%.xml,$@);hb=HEAD" > $@ || exit 1
-	mono-xmltool --prettyprint $@ > $@.tmp || exit 1
-	xmlstarlet c14n $@.tmp > $@ || exit 1
-	rm $@.tmp
+	# FIXME: disable them until some AOSP web repository becomes available.
+	#curl "http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=api/$(patsubst api-%.xml.org,%.xml,$@);hb=HEAD" > $@ || exit 1
+	#mono-xmltool --prettyprint $@ > $@.tmp || exit 1
+	#xmlstarlet c14n $@.tmp > $@ || exit 1
+	#rm $@.tmp
 
 # annotations
 

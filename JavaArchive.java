@@ -40,17 +40,18 @@ import org.objectweb.asm.tree.*;
 
 public class JavaArchive {
 
-	private JarFile file;
+	private List<JarFile> files = new ArrayList<JarFile> ();
 	private ClassLoader loader;
 
-	public JavaArchive (String filename, List<String> additionalJars) throws Exception
+	public JavaArchive (List<String> filenames, List<String> additionalJars) throws Exception
 	{
-		URL url = new File (filename).getAbsoluteFile ().toURL ();
 		List<URL> urls = new ArrayList<URL> ();
-		urls.add (url);
+		for (String filename : filenames) {
+			files.add (new JarFile (filename));
+			urls.add (new File (filename).getAbsoluteFile ().toURL ());
+		}
 		for (String additionalJar : additionalJars)
 			urls.add (new File (additionalJar).getAbsoluteFile ().toURL ());
-		file = new JarFile (filename);
 		URL [] urlsArray = new URL [urls.size ()];
 		urls.toArray (urlsArray);
 		loader = new URLClassLoader (urlsArray, JavaArchive.class.getClassLoader ());
@@ -59,6 +60,16 @@ public class JavaArchive {
 	public List<JavaPackage> getPackages ()
 	{
 		HashMap<String, JavaPackage> packages = new HashMap <String, JavaPackage> ();
+		for (JarFile file : files)
+			getPackages (packages, file);
+
+		ArrayList<JavaPackage> result = new ArrayList<JavaPackage> (packages.values ());
+		Collections.sort (result);
+		return result;
+	}
+
+	void getPackages (HashMap<String, JavaPackage> packages, JarFile file)
+	{
 		Enumeration<JarEntry> entries = file.entries ();
 		while (entries.hasMoreElements ()) {
 			JarEntry entry = entries.nextElement ();
@@ -87,10 +98,6 @@ public class JavaArchive {
 				}
 			}
 		}
-
-		ArrayList<JavaPackage> result = new ArrayList<JavaPackage> (packages.values ());
-		Collections.sort (result);
-		return result;
 	}
 }
 

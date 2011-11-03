@@ -91,7 +91,7 @@ public class Start {
 		String droiddocs = null;
 		String javadocs = null;
 		String annots = null;
-		String jar_path = null;
+		List<String> jar_paths = new ArrayList<String> ();
 		String out_path = null;
 		List<String> additional_jar_paths = new ArrayList<String> ();
 		String usage = "Usage: jar2xml --jar=<jarfile> --out=<file> [--javadocpath=<javadoc>] [--droiddocpath=<droiddoc>] [--annotations=<xmlfile>]";
@@ -104,7 +104,7 @@ public class Start {
 			} else if (arg.startsWith ("--annotations=")) {
 				annots = arg.substring (14);
 			} else if (arg.startsWith ("--jar=")) {
-				jar_path = arg.substring (6);
+				jar_paths.add (arg.substring (6));
 			} else if (arg.startsWith ("--ref=")) {
 				additional_jar_paths.add (arg.substring (6));
 			} else if (arg.startsWith ("--out=")) {
@@ -115,16 +115,16 @@ public class Start {
 			}
 		}
 
-		if (jar_path == null || out_path == null) {
+		if (jar_paths.size() == 0 || out_path == null) {
 			System.err.println (usage);
 			System.exit (1);
 		}
 
 		JavaArchive jar = null;
 		try {
-			jar = new JavaArchive (jar_path, additional_jar_paths);
+			jar = new JavaArchive (jar_paths, additional_jar_paths);
 		} catch (Exception e) {
-			System.err.println ("Couldn't open java archive at specified path " + jar_path + " : " + e);
+			System.err.println ("Couldn't open java archive : " + e);
 			System.exit (1);
 		}
 
