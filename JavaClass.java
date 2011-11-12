@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.Locale;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.objectweb.asm.*;
@@ -186,6 +187,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		else if (asmField.value != null) {
 			String type = e.getAttribute ("type");
 			boolean isPublic = Modifier.isPublic (mods);
+			Locale invariant = Locale.US;
 			try {
 				if (type == "int")
 					e.setAttribute ("value", String.format ("%d", asmField.value));
@@ -203,7 +205,7 @@ public class JavaClass implements Comparable<JavaClass> {
 					if (fvalue == Float.MIN_NORMAL)
 						svalue = "1.17549435E-38";
 					else
-						svalue = String.format ("%f", asmField.value);
+						svalue = String.format (invariant, "%f", asmField.value);
 					e.setAttribute ("value", svalue);
 				} else if (type == "double") {
 					// see java.lang.Double constants.
@@ -226,7 +228,7 @@ public class JavaClass implements Comparable<JavaClass> {
 						// FIXME: here we specify "limited" digits for formatting.
 						// This should fix most cases, but this could still result in not-precise value.
 						// Math.E and Math.PI works with this.
-						svalue = String.format ("%.15f", dvalue);
+						svalue = String.format (invariant, "%.15f", dvalue);
 					e.setAttribute ("value", svalue);
 				}
 				else if (type == "boolean")
