@@ -1,4 +1,4 @@
-API_LEVELS = 4 7 8 10 12 13 14
+API_LEVELS = 4 7 8 10 12 13 14 15
 
 TARGET=jar2xml.jar 
 
@@ -50,25 +50,26 @@ test-12: api-10.xml.org api-12.xml.in
 
 test-13: api-10.xml.org api-13.xml.in
 
-test-14: api-10.xml.org api-14.xml.in
-
-clean-test-8:
+clean-8:
 	rm api-8.xml.in annotations/8.xml tmpout/8-deprecated-members.xml
 
-clean-test-9:
+clean-9:
 	rm api-9.xml.in annotations/9.xml tmpout/9-deprecated-members.xml
 
-clean-test-10:
+clean-10:
 	rm api-10.xml.in annotations/10.xml tmpout/10-deprecated-members.xml
 
-clean-test-12:
+clean-12:
 	rm api-12.xml.in annotations/12.xml tmpout/12-deprecated-members.xml
 
-clean-test-13:
+clean-13:
 	rm api-13.xml.in annotations/13.xml tmpout/13-deprecated-members.xml
 
-clean-test-14:
+clean-14:
 	rm api-14.xml.in annotations/14.xml tmpout/14-deprecated-members.xml
+
+clean-15:
+	rm api-15.xml.in annotations/15.xml tmpout/15-deprecated-members.xml
 
 # download and setup docs directory for each API profile
 
@@ -105,6 +106,9 @@ docs-api-13: docs-3.2_r01-linux.zip
 	$(call extract-docs,$<,docs_r01-linux)
 
 docs-api-14: docs-14_r01.zip
+	$(call extract-docs,$<,docs)
+
+docs-api-15: docs-15_r01.zip
 	$(call extract-docs,$<,docs)
 
 api-%.xml.org:
