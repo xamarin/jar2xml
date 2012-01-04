@@ -405,6 +405,10 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	public void appendToDocument (Document doc, Element parent)
 	{
+		// FIXME: remove this hack (somehow)
+		if (jclass.getName ().equals ("android.support.v4.widget.SearchViewCompatHoneycomb"))
+			return;
+
 		int mods = jclass.getModifiers ();
 
 		Element e = doc.createElement (jclass.isInterface () && !jclass.isAnnotation () ? "interface" : "class");
@@ -447,6 +451,7 @@ public class JavaClass implements Comparable<JavaClass> {
 			iface_elem.appendChild (doc.createTextNode ("\n"));
 			e.appendChild (iface_elem);
 		}
+
 		for (Constructor ctor : jclass.getDeclaredConstructors ())
 			appendCtor (ctor, doc, e);
 
