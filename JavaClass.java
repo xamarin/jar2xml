@@ -370,6 +370,8 @@ public class JavaClass implements Comparable<JavaClass> {
 						tc_elem.setAttribute ("type", tcc.getName ());
 					else if (pt != null)
 						tc_elem.setAttribute ("type", pt.toString ()); // FIXME: this is not strictly compliant to the ParameterizedType API (no assured tostring() behavior to return type name)
+					else if (tc instanceof TypeVariable<?>)
+						tc_elem.setAttribute ("type", ((TypeVariable<?>) tc).getName ());
 					else
 						throw new UnsupportedOperationException ("Type is " + tc.getClass ());
 					tcs_elem.appendChild (tc_elem);
