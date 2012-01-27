@@ -75,7 +75,7 @@ public abstract class AndroidDocScraper implements IDocScraper {
 
 		root = dir;
 
-		File packageList = new File (dir.getAbsolutePath() + "/package-list");
+		File packageList = new File (dir.getAbsolutePath() + "/packages.html");
 		if (!packageList.isFile())
 			throw new IllegalArgumentException (dir.getAbsolutePath() + " does not appear to be an android doc reference directory.");
 	}
@@ -84,8 +84,10 @@ public abstract class AndroidDocScraper implements IDocScraper {
 	{
 		String path = asm.name.replace ('$', '.') + ".html";
 		File file = new File(root.getPath() + "/" + path);
-		if (!file.isFile ())
+		if (!file.isFile ()) {
+			// System.err.println ("Warning: no document found : " + file);
 			return null;
+		}
 
 		StringBuffer buffer = new StringBuffer ();
 		buffer.append (pattern_head);
@@ -106,40 +108,45 @@ public abstract class AndroidDocScraper implements IDocScraper {
 
 		try {
 			FileInputStream stream = new FileInputStream (file);
-			InputStreamReader rdr;
-			rdr = new InputStreamReader (stream, "UTF-8");
-			BufferedReader br = new BufferedReader (rdr);
-			String text = "";
-			String prev = null;
-			while ((text = br.readLine ()) != null) {
-				if (prev != null)
-					prev = text = prev + text;
-				Matcher matcher = pattern.matcher (text);
-				if (matcher.find ()) {
-					String plist = matcher.group (1);
-					String[] parms = plist.split (", ");
-					if (parms.length != ptypes.length)
-						System.err.println ("failed matching " + buffer.toString ());
-					String[] result = new String [ptypes.length];
-					for (int i = 0; i < ptypes.length; i++) {
-						String[] toks = parms [i].split (parameter_pair_splitter);
-						result [i] = toks [toks.length - 1];
+			try {
+				InputStreamReader rdr;
+				rdr = new InputStreamReader (stream, "UTF-8");
+				BufferedReader br = new BufferedReader (rdr);
+				String text = "";
+				String prev = null;
+				while ((text = br.readLine ()) != null) {
+					if (prev != null)
+						prev = text = prev + text;
+					Matcher matcher = pattern.matcher (text);
+					if (matcher.find ()) {
+						String plist = matcher.group (1);
+						String[] parms = plist.split (", ");
+						if (parms.length != ptypes.length)
+							System.err.println ("failed matching " + buffer.toString ());
+						String[] result = new String [ptypes.length];
+						for (int i = 0; i < ptypes.length; i++) {
+							String[] toks = parms [i].split (parameter_pair_splitter);
+							result [i] = toks [toks.length - 1];
+						}
+						stream.close();
+						return result;
 					}
-					stream.close();
-					return result;
+					// sometimes we get incomplete tag, so cache it until it gets complete or matched.
+					// I *know* this is a hack.
+					if (reset_pattern_head == null || text.endsWith (">") || !text.startsWith (reset_pattern_head))
+						prev = null;
+					else
+						prev = text;
 				}
-				// sometimes we get incomplete tag, so cache it until it gets complete or matched.
-				// I *know* this is a hack.
-				if (reset_pattern_head == null || text.endsWith (">") || !text.startsWith (reset_pattern_head))
-					prev = null;
-				else
-					prev = text;
+			} finally {			
+				stream.close();
 			}
-			stream.close();
 		} catch (Exception e) {
+			// System.err.println ("ERROR " + e);
 			return new String [0];
 		}
 
+		// System.err.println ("Warning : no match for " + asm.name + " :: " + name);
 		return new String [0];
 	}
 	
