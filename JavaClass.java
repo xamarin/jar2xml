@@ -546,12 +546,10 @@ public class JavaClass implements Comparable<JavaClass> {
 		for (String sig : sigs)
 			appendMethod (methods.get (sig), doc, e);
 
-		if (!jclass.isEnum ()) { // enums are somehow skipped.
-			Field [] fields = getDeclaredFields ();
-			sortFields (fields);
-			for (Field field : fields)
-				appendField (field, asmFields.get (field.getName ()), doc, e);
-		}
+		Field [] fields = getDeclaredFields ();
+		sortFields (fields);
+		for (Field field : fields)
+			appendField (field, asmFields.get (field.getName ()), doc, e);
 		parent.appendChild (e);
 	}
 	
