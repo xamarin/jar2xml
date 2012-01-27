@@ -75,8 +75,8 @@ public abstract class AndroidDocScraper implements IDocScraper {
 
 		root = dir;
 
-		File packageList = new File (dir.getAbsolutePath() + "/packages.html");
-		if (!packageList.isFile())
+		if (!new File (dir.getAbsolutePath() + "/package-list").isFile() &&
+		    !new File (dir.getAbsolutePath() + "/packages.html").isFile())
 			throw new IllegalArgumentException (dir.getAbsolutePath() + " does not appear to be an android doc reference directory.");
 	}
 
