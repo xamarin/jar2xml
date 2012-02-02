@@ -22,8 +22,8 @@ sources = \
 $(TARGET): $(sources) MANIFEST.MF
 	-rm -rf obj
 	mkdir -p obj
-	javac -g -d obj $(sources) -cp asm-debug-all-4.0_RC1.jar
-	jar cfm "$@" MANIFEST.MF asm-debug-all-4.0_RC1.jar -C obj/ .
+	javac -g -d obj $(sources) -cp asm-debug-all-4.0.jar
+	jar cfm "$@" MANIFEST.MF asm-debug-all-4.0.jar -C obj/ .
 
 scraper.exe : scraper.cs
 	mcs -debug scraper.cs
