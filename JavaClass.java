@@ -462,10 +462,12 @@ public class JavaClass implements Comparable<JavaClass> {
 		for (Method method : jclass.getDeclaredMethods ()) {
 			int mmods = method.getModifiers ();
 
+/*
 			if (!Modifier.isPublic (mods) && (mmods & 0x1000) != 0) {
-				System.err.println ("Skipped method " + method + " (unusual access modifier)");
+				System.err.println ("Skipped method " + method + " (unusual access modifier " + mmods + ")");
 				continue; // Some non-standard flag seems to detect non-declared method on the source e.g. AbstractStringBuilder.append(char)
 			}
+*/
 
 			int rtmods = method.getReturnType ().getModifiers ();
 			if (!Modifier.isPublic (rtmods) && !Modifier.isProtected (rtmods))
