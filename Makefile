@@ -23,7 +23,10 @@ $(TARGET): $(sources) MANIFEST.MF
 	-rm -rf obj
 	mkdir -p obj
 	javac -g -d obj $(sources) -cp asm-debug-all-4.0_RC1.jar
-	jar cfm "$@" MANIFEST.MF asm-debug-all-4.0_RC1.jar -C obj/ .
+	mkdir -p tmp-asm-expanded
+	unzip asm-debug-all-4.0.jar -d tmp-asm-expanded
+	jar cfm "$@" MANIFEST.MF LICENSE-ASM.txt -C obj/ . -C tmp-asm-expanded .
+	rm -r tmp-asm-expanded
 
 scraper.exe : scraper.cs
 	mcs -debug scraper.cs
