@@ -119,6 +119,9 @@ public class Start {
 			System.err.println (usage);
 			System.exit (1);
 		}
+		File dir = new File (out_path).getParentFile ();
+		if (!dir.exists ())
+			dir.mkdirs ();
 
 		JavaArchive jar = null;
 		try {
@@ -171,10 +174,12 @@ public class Start {
 			TransformerFactory transformer_factory = TransformerFactory.newInstance ();
 			Transformer transformer = transformer_factory.newTransformer ();
 			transformer.setOutputProperty (OutputKeys.INDENT, "yes");
-			OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(out_path),"UTF-8");
+			FileOutputStream stream = new FileOutputStream(out_path);
+			OutputStreamWriter writer = new OutputStreamWriter(stream,"UTF-8");
 			StreamResult result = new StreamResult (writer);
 			DOMSource source = new DOMSource (doc);
 			transformer.transform (source, result);
+			writer.close ();
 		} catch (Exception e) {
 			System.err.println ("Couldn't format xml file - exception occurred:" + e.getMessage ());
 		}
