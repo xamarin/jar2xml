@@ -119,7 +119,7 @@ public class Start {
 			System.err.println (usage);
 			System.exit (1);
 		}
-		File dir = new File (out_path).getParentFile ();
+		File dir = new File (out_path).getAbsoluteFile ().getParentFile ();
 		if (!dir.exists ())
 			dir.mkdirs ();
 
