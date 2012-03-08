@@ -22,7 +22,7 @@ sources = \
 $(TARGET): $(sources) MANIFEST.MF
 	-rm -rf obj
 	mkdir -p obj
-	javac -g -d obj $(sources) -cp asm-debug-all-4.0_RC1.jar
+	javac -g -d obj $(sources) -cp asm-debug-all-4.0.jar
 	mkdir -p tmp-asm-expanded
 	unzip asm-debug-all-4.0.jar -d tmp-asm-expanded
 	jar cfm "$@" MANIFEST.MF LICENSE-ASM.txt -C obj/ . -C tmp-asm-expanded .
