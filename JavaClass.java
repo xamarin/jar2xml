@@ -369,7 +369,7 @@ public class JavaClass implements Comparable<JavaClass> {
 					if (tcc != null)
 						tc_elem.setAttribute ("type", tcc.getName ());
 					else if (pt != null)
-						tc_elem.setAttribute ("type", pt.toString ()); // FIXME: this is not strictly compliant to the ParameterizedType API (no assured tostring() behavior to return type name)
+						tc_elem.setAttribute ("type", getGenericTypeName (pt));
 					else if (tc instanceof TypeVariable<?>)
 						tc_elem.setAttribute ("type", ((TypeVariable<?>) tc).getName ());
 					else
@@ -623,9 +623,21 @@ public class JavaClass implements Comparable<JavaClass> {
 				}
 			}
 			return name.replace ('$', '.');
-		} else if (type.getClass ().toString ().equals ("class sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl")) {
-			String name = duplicatePackageAndClass.matcher (type.toString ()).replaceAll ("$1");
-			return name.replace ('$', '.');
+		} else if (type instanceof ParameterizedType) {
+			// toString() does not work fine for ParameterizedType, so do it by ourselves.
+			ParameterizedType ptype = (ParameterizedType) type;
+			StringBuilder sb = new StringBuilder ();
+			sb.append (getGenericTypeName (ptype.getRawType ())).append ('<');
+			boolean follow = false;
+			for (Type ta : ptype.getActualTypeArguments ()) {
+				if (follow)
+					sb.append (", ");
+				else
+					follow = true;
+				sb.append (getGenericTypeName (ta));
+			}
+			sb.append ('>');
+			return sb.toString ();
 		} else {
 			return type.toString ().replace ('$', '.');
 		}
