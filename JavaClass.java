@@ -184,6 +184,8 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (asmField == null)
 			// this happens to couple of fields on java.awt.font.TextAttribute, java.lang.Double/Float and so on.
 			System.err.println ("!!!!! WARNING!!! null ASM FieldNode for " + field);
+		//else if (field.isEnumConstant ())
+		//	e.setAttribute ("value", field.getName ());
 		else if (asmField.value != null) {
 			String type = e.getAttribute ("type");
 			boolean isPublic = Modifier.isPublic (mods);
@@ -407,8 +409,10 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	public void appendToDocument (Document doc, Element parent)
 	{
-		// FIXME: remove this hack (somehow)
+		// FIXME: remove these hacks (somehow / this is NoClassDefFoundError that we cannot avoid by our own code)
 		if (jclass.getName ().equals ("android.support.v4.widget.SearchViewCompatHoneycomb"))
+			return;
+		if (jclass.getName ().equals ("android.support.v4.app.ShareCompatICS"))
 			return;
 
 		int mods = jclass.getModifiers ();
