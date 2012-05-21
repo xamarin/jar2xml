@@ -94,7 +94,7 @@ public class Start {
 		List<String> jar_paths = new ArrayList<String> ();
 		String out_path = null;
 		List<String> additional_jar_paths = new ArrayList<String> ();
-		String usage = "Usage: jar2xml --jar=<jarfile> --out=<file> [--javadocpath=<javadoc>] [--droiddocpath=<droiddoc>] [--annotations=<xmlfile>]";
+		String usage = "Usage: jar2xml --jar=<jarfile> [--ref=<jarfile>] --out=<file> [--javadocpath=<javadoc>] [--droiddocpath=<droiddoc>] [--annotations=<xmlfile>]";
 
 		for (String arg : args) {
 			if (arg.startsWith ("--javadocpath=")) {

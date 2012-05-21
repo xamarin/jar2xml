@@ -184,8 +184,6 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (asmField == null)
 			// this happens to couple of fields on java.awt.font.TextAttribute, java.lang.Double/Float and so on.
 			System.err.println ("!!!!! WARNING!!! null ASM FieldNode for " + field);
-		//else if (field.isEnumConstant ())
-		//	e.setAttribute ("value", field.getName ());
 		else if (asmField.value != null) {
 			String type = e.getAttribute ("type");
 			boolean isPublic = Modifier.isPublic (mods);
@@ -238,7 +236,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (type == "java.lang.String") {
 					String value = (String) asmField.value;
 					if (value != null)
-						e.setAttribute ("value", "\"" + value.replace ("\\", "\\\\") + "\"");
+						e.setAttribute ("value", "\"" + escapeLiteral (value.replace ("\\", "\\\\")) + "\"");
 				}
 				else if (Modifier.isStatic (mods) && e.getAttribute ("type").endsWith ("[]"))
 					e.setAttribute ("value", "null");
@@ -250,6 +248,24 @@ public class JavaClass implements Comparable<JavaClass> {
 			e.setAttribute ("value", "null");
 		e.appendChild (doc.createTextNode ("\n"));
 		parent.appendChild (e);
+	}
+
+	String escapeLiteral (String s)
+	{
+		for (int i = 0; i < s.length (); i++)
+			if (s.charAt (i) < 0x20 || 0xFF <= s.charAt (i))
+				return doEscapeLiteral (new StringBuilder (s), i);
+		return s;
+	}
+
+	String doEscapeLiteral (StringBuilder s, int i)
+	{
+		s.replace (i, i + 1, String.format ("\\u%1$x04" + (int) s.charAt (i)));
+		i += 4;
+		for (;i < s.length (); i++)
+			if (s.charAt (i) < 0x20 || 0xFF <= s.charAt (i))
+				return doEscapeLiteral (s, i);
+		return s.toString ();
 	}
 
 	void appendMethod (Method method, Document doc, Element parent)
