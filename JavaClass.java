@@ -236,7 +236,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (type == "java.lang.String") {
 					String value = (String) asmField.value;
 					if (value != null)
-						e.setAttribute ("value", "\"" + escapeLiteral (value.replace ("\\", "\\\\")) + "\"");
+						e.setAttribute ("value", "\"" + escapeLiteral (value.replace ("\\", "\\\\").replace ("\"", "\\\"")) + "\"");
 				}
 				else if (Modifier.isStatic (mods) && e.getAttribute ("type").endsWith ("[]"))
 					e.setAttribute ("value", "null");
