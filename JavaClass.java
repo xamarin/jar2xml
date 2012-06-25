@@ -124,6 +124,15 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	void appendCtor (Constructor ctor, Document doc, Element parent)
 	{
+		try {
+			doAppendCtor (ctor, doc, parent);
+		} catch (NoClassDefFoundError ex) {
+			System.err.println ("WARNING: missing class error was raised while reflecting " + ctor.getName () + " [" + ctor + "] : " + ex.getMessage ());
+		}
+	}
+	
+	void doAppendCtor (Constructor ctor, Document doc, Element parent)
+	{
 		int mods = ctor.getModifiers ();
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
 			return;
@@ -443,12 +452,15 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	public void appendToDocument (Document doc, Element parent)
 	{
-		// FIXME: remove these hacks (somehow / this is NoClassDefFoundError that we cannot avoid by our own code)
-		if (jclass.getName ().equals ("android.support.v4.widget.SearchViewCompatHoneycomb"))
-			return;
-		if (jclass.getName ().equals ("android.support.v4.app.ShareCompatICS"))
-			return;
-
+		try {
+			doAppendToDocument (doc, parent);
+		} catch (NoClassDefFoundError ex) {
+			System.err.println ("WARNING: missing class error was raised while reflecting " + jclass.getName () + " : " + ex.getMessage ());
+		}
+	}
+	
+	void doAppendToDocument (Document doc, Element parent)
+	{
 		int mods = jclass.getModifiers ();
 
 		Element e = doc.createElement (jclass.isInterface () && !jclass.isAnnotation () ? "interface" : "class");
