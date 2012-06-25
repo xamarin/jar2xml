@@ -153,6 +153,15 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	void appendField (Field field, FieldNode asmField, Document doc, Element parent)
 	{
+		try {
+			doAppendField (field, asmField, doc, parent);
+		} catch (NoClassDefFoundError ex) {
+			System.err.println ("WARNING: missing class error was raised while reflecting " + field.getName () + " [" + field + "] : " + ex.getMessage ());
+		}
+	}
+	
+	void doAppendField (Field field, FieldNode asmField, Document doc, Element parent)
+	{
 		int mods = field.getModifiers ();
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
 			return;
@@ -269,6 +278,15 @@ public class JavaClass implements Comparable<JavaClass> {
 	}
 
 	void appendMethod (Method method, Document doc, Element parent)
+	{
+		try {
+			doAppendMethod (method, doc, parent);
+		} catch (NoClassDefFoundError ex) {
+			System.err.println ("WARNING: missing class error was raised while reflecting " + method.getName () + " [" + method + "] : " + ex.getMessage ());
+		}
+	}
+	
+	void doAppendMethod (Method method, Document doc, Element parent)
 	{
 		int mods = method.getModifiers ();
 		if (!Modifier.isPublic (mods) && !Modifier.isProtected (mods))
