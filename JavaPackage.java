@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2011 Xamarin Inc.
+ *  Copyright (c) 2011-2012 Xamarin Inc.
  * 
  *  Permission is hereby granted, free of charge, to any person 
  *  obtaining a copy of this software and associated documentation 
@@ -62,8 +62,23 @@ public class JavaPackage implements Comparable<JavaPackage> {
 		e.setAttribute ("name", name);
 		parent.appendChild (e);
 		Collections.sort (classes);
+		for (int i = 0; i < classes.size (); i++) {
+			String name = classes.get (i).getName ();
+			int idx = name.lastIndexOf ('.');
+			String body = idx < 0 ? name : name.substring (idx + 1);
+			if (isObfuscatedName (body))
+				classes.get (i).setObfuscated (true);
+		}
 		for (JavaClass c : classes)
 			c.appendToDocument (doc, e);
+	}
+	
+	static boolean isObfuscatedName (String name)
+	{
+		for (char c : name.toCharArray ())
+			if (c != '$' && (c < 'a' || 'z' < c))
+				return false;
+		return true;
 	}
 }
 

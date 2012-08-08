@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2011 Xamarin Inc.
+ *  Copyright (c) 2011-2012 Xamarin Inc.
  * 
  *  Permission is hereby granted, free of charge, to any person 
  *  obtaining a copy of this software and associated documentation 
@@ -55,6 +55,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	private Map<String,FieldNode> asmFields;
 	private List<String> deprecatedFields;
 	private List<String> deprecatedMethods;
+	private boolean is_obfuscated;
 
 	public JavaClass (Class jclass, ClassNode asm)
 	{
@@ -76,6 +77,16 @@ public class JavaClass implements Comparable<JavaClass> {
 	public String getName ()
 	{
 		return asm.name.replace ('/', '.');
+	}
+	
+	public boolean isObfuscated ()
+	{
+		return is_obfuscated;
+	}
+	
+	public void setObfuscated (boolean value)
+	{
+		is_obfuscated = value;
 	}
 
 	String[] getParameterNames (String name, Type[] types, boolean isVarArgs)
@@ -478,6 +489,8 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : Modifier.isProtected (mods) ? "protected" : "");
+		if (is_obfuscated)
+			e.setAttribute ("obfuscated", Boolean.toString (is_obfuscated));
 
 		Element typeParameters = getTypeParametersNode (doc, jclass.getTypeParameters ());
 		if (typeParameters != null)
