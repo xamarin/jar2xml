@@ -278,7 +278,7 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	String doEscapeLiteral (StringBuilder s, int i)
 	{
-		s.replace (i, i + 1, String.format ("\\u%1$x04" + (int) s.charAt (i)));
+		s.replace (i, i + 1, String.format ("\\u%1$04X", (int) s.charAt (i)));
 		i += 4;
 		for (;i < s.length (); i++)
 			if (s.charAt (i) < 0x20 || 0xFF <= s.charAt (i))
