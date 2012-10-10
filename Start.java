@@ -152,24 +152,24 @@ public class Start {
 		}
 
 		try {
-		Element root = doc.createElement ("api");
-		doc.appendChild (root);
-		for (JavaPackage pkg : jar.getPackages ())
-			pkg.appendToDocument (doc, root);
-		for (String ann : annotations) {
-			String pkg = ann.substring (0, ann.lastIndexOf ('.'));
-			NodeList nl = root.getChildNodes ();
-			for (int ind = 0; ind < nl.getLength (); ind++) {
-				Node n = nl.item (ind);
-				if (!(n instanceof Element))
-					continue;
-				Element el = (Element) n;
-				if (el.getAttribute ("name").equals (pkg)) {
-					String local = ann.substring (pkg.length () + 1);
-					el.appendChild (createAnnotationMock (doc, local.replace ("$", ".")));
+			Element root = doc.createElement ("api");
+			doc.appendChild (root);
+			for (JavaPackage pkg : jar.getPackages ())
+				pkg.appendToDocument (doc, root);
+			for (String ann : annotations) {
+				String pkg = ann.substring (0, ann.lastIndexOf ('.'));
+				NodeList nl = root.getChildNodes ();
+				for (int ind = 0; ind < nl.getLength (); ind++) {
+					Node n = nl.item (ind);
+					if (!(n instanceof Element))
+						continue;
+					Element el = (Element) n;
+					if (el.getAttribute ("name").equals (pkg)) {
+						String local = ann.substring (pkg.length () + 1);
+						el.appendChild (createAnnotationMock (doc, local.replace ("$", ".")));
+					}
 				}
 			}
-		}
 		} catch (Exception e) {
 			System.err.println (e);
 			System.err.println ("error J2X0002: API analyzer failed with java exception. See verbose output for details.");
