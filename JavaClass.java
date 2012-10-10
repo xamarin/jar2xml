@@ -129,7 +129,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		try {
 			doAppendCtor (ctor, doc, parent);
 		} catch (NoClassDefFoundError ex) {
-			System.err.println ("WARNING: missing class error was raised while reflecting " + ctor.getName () + " [" + ctor + "] : " + ex.getMessage ());
+			System.err.println ("warning J2XA001: missing class error was raised while reflecting " + ctor.getName () + " [" + ctor + "] : " + ex.getMessage ());
 		}
 	}
 	
@@ -167,7 +167,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		try {
 			doAppendField (field, asmField, doc, parent);
 		} catch (NoClassDefFoundError ex) {
-			System.err.println ("WARNING: missing class error was raised while reflecting " + field.getName () + " [" + field + "] : " + ex.getMessage ());
+			System.err.println ("warning J2XA002: missing class error was raised while reflecting " + field.getName () + " [" + field + "] : " + ex.getMessage ());
 		}
 	}
 	
@@ -203,7 +203,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		
 		if (asmField == null)
 			// this happens to couple of fields on java.awt.font.TextAttribute, java.lang.Double/Float and so on.
-			System.err.println ("!!!!! WARNING!!! null ASM FieldNode for " + field);
+			System.err.println ("warning J2XA003: asm failed to retrieve FieldNode for " + field);
 		else if (asmField.value != null) {
 			String type = e.getAttribute ("type");
 			boolean isPublic = Modifier.isPublic (mods);
@@ -261,7 +261,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (Modifier.isStatic (mods) && e.getAttribute ("type").endsWith ("[]"))
 					e.setAttribute ("value", "null");
 			} catch (Exception exc) {
-				System.err.println ("Error accessing constant field " + field.getName () + " value for class " + getName () + " : " + exc);
+				System.err.println ("warning J2XA004: error accessing constant field " + field.getName () + " value for class " + getName () + " : " + exc);
 			}
 		}
 		else if (!Modifier.isStatic (mods) && e.getAttribute ("type").endsWith ("[]"))
@@ -293,7 +293,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		try {
 			doAppendMethod (method, doc, parent);
 		} catch (NoClassDefFoundError ex) {
-			System.err.println ("WARNING: missing class error was raised while reflecting " + method.getName () + " [" + method + "] : " + ex.getMessage ());
+			System.err.println ("warning J2XA005: missing class error was raised while reflecting " + method.getName () + " [" + method + "] : " + ex.getMessage ());
 		}
 	}
 	
@@ -420,7 +420,7 @@ public class JavaClass implements Comparable<JavaClass> {
 					else if (tc instanceof TypeVariable<?>)
 						tc_elem.setAttribute ("type", ((TypeVariable<?>) tc).getName ());
 					else
-						throw new UnsupportedOperationException ("Type is " + tc.getClass ());
+						throw new UnsupportedOperationException ("internal error: unsupported type of Type " + tc.getClass ());
 					tcs_elem.appendChild (tc_elem);
 				}
 				if (tcs_elem != null)
@@ -457,7 +457,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		try {
 			doAppendToDocument (doc, parent);
 		} catch (NoClassDefFoundError ex) {
-			System.err.println ("WARNING: missing class error was raised while reflecting " + jclass.getName () + " : " + ex.getMessage ());
+			System.err.println ("warning J2XA006: missing class error was raised while reflecting " + jclass.getName () + " : " + ex.getMessage ());
 		}
 	}
 	
@@ -589,8 +589,8 @@ public class JavaClass implements Comparable<JavaClass> {
 				if (mret == null || (hret != null && hret.isAssignableFrom (mret)))
 					methods.put (key, method);
 				else if (hret != null && !mret.isAssignableFrom (hret)) {
-					System.out.println ("method collision: " + jclass.getName () + "." + key);
-					System.out.println ("   " + hashed.getGenericReturnType ().toString () + " ----- " + method.getGenericReturnType ().toString ());
+					System.err.print ("warning J2XA007: method collision: " + jclass.getName () + "." + key);
+					System.err.println ("   " + hashed.getGenericReturnType ().toString () + " ----- " + method.getGenericReturnType ().toString ());
 				}
 			} else {
 				methods.put (key, method);
@@ -672,7 +672,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (name.charAt (0) == 'L')
 					return name.substring (1, name.length () - 1).replace ('$', '.') + suffix;
 				else {
-					System.err.println ("Unexpected array type name '" + name + "'");
+					System.err.println ("warning J2XA008: unexpected array type name '" + name + "'");
 					return "";
 				}
 			}

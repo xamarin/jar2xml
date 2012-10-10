@@ -94,7 +94,7 @@ public class JavaArchive {
 					}
 					pkg.addClass (new JavaClass (c, node));
 				} catch (Throwable t) {
-					System.err.println ("Couldn't load class " + name + " : " + t);
+					System.err.println ("warning J2X9001: Couldn't load class " + name + " : " + t);
 				}
 			}
 		}

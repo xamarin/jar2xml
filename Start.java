@@ -127,7 +127,7 @@ public class Start {
 		try {
 			jar = new JavaArchive (jar_paths, additional_jar_paths);
 		} catch (Exception e) {
-			System.err.println ("Couldn't open java archive : " + e);
+			System.err.println ("error J2X0001: Couldn't open java archive : " + e);
 			System.exit (1);
 		}
 
@@ -139,7 +139,7 @@ public class Start {
 			if (javadocs != null)
 				JavaClass.addDocScraper (new JavaDocScraper (new File (javadocs)));
 		} catch (Exception e) {
-			System.err.println ("Couldn't access javadocs at specified docpath.  Continuing without it...");
+			System.err.println ("warning J2X8001: Couldn't access javadocs at specified docpath.  Continuing without it...");
 		}
 
 		Document doc = null;
@@ -148,9 +148,10 @@ public class Start {
 			DocumentBuilder builder = builder_factory.newDocumentBuilder ();
 			doc = builder.newDocument ();
 		} catch (Exception e) {
-			System.err.println ("Couldn't create xml document - exception occurred:" + e.getMessage ());
+			System.err.println ("warning J2X8002: Couldn't create xml document - exception occurred:" + e.getMessage ());
 		}
 
+		try {
 		Element root = doc.createElement ("api");
 		doc.appendChild (root);
 		for (JavaPackage pkg : jar.getPackages ())
@@ -169,6 +170,11 @@ public class Start {
 				}
 			}
 		}
+		} catch (Exception e) {
+			System.err.println (e);
+			System.err.println ("error J2X0002: API analyzer failed with java exception. See verbose output for details.");
+			System.exit (1);
+		}
 
 		try {
 			TransformerFactory transformer_factory = TransformerFactory.newInstance ();
@@ -181,7 +187,8 @@ public class Start {
 			transformer.transform (source, result);
 			writer.close ();
 		} catch (Exception e) {
-			System.err.println ("Couldn't format xml file - exception occurred:" + e.getMessage ());
+			System.err.println ("error J2X0003: Couldn't format xml file - exception occurred:" + e.getMessage ());
+			System.exit (1);
 		}
 	}
 }
