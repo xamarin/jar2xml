@@ -261,7 +261,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (Modifier.isStatic (mods) && e.getAttribute ("type").endsWith ("[]"))
 					e.setAttribute ("value", "null");
 			} catch (Exception exc) {
-				System.err.println ("warning J2XA004: error accessing constant field " + field.getName () + " value for class " + getName () + " : " + exc);
+				System.err.println ("warning J2XA004: error accessing constant field " + field.getName () + " value for class " + getName () + " : " + exc.getMessage ());
 			}
 		}
 		else if (!Modifier.isStatic (mods) && e.getAttribute ("type").endsWith ("[]"))
@@ -693,7 +693,13 @@ public class JavaClass implements Comparable<JavaClass> {
 			sb.append ('>');
 			return sb.toString ();
 		} else {
-			return type.toString ().replace ('$', '.');
+			try {
+				return type.toString ().replace ('$', '.');
+			} catch (TypeNotPresentException e) { // Oracle has buggy Type.toString() implementation that throws this error at this late.
+				System.err.println (e);
+				System.err.println ("warning J2XA009: Java failed to resolve type. See verbose output for details.");
+				return "";
+			}
 		}
 	}
 
