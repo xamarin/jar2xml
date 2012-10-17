@@ -64,7 +64,8 @@ public class JavaPackage implements Comparable<JavaPackage> {
 		Collections.sort (classes);
 		for (int i = 0; i < classes.size (); i++) {
 			String name = classes.get (i).getName ();
-			int idx = name.lastIndexOf ('.');
+			int idx = name.lastIndexOf ('$');
+			idx = idx < 0 ? name.lastIndexOf ('.') : idx;
 			String body = idx < 0 ? name : name.substring (idx + 1);
 			if (isObfuscatedName (body))
 				classes.get (i).setObfuscated (true);
@@ -76,7 +77,7 @@ public class JavaPackage implements Comparable<JavaPackage> {
 	static boolean isObfuscatedName (String name)
 	{
 		for (char c : name.toCharArray ())
-			if (c != '$' && (c < 'a' || 'z' < c))
+			if (c != '$' && (c < 'a' || 'z' < c) && (c < '0' || '9' < c))
 				return false;
 		return true;
 	}
