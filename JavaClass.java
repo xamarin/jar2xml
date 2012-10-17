@@ -464,6 +464,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	void doAppendToDocument (Document doc, Element parent)
 	{
 		int mods = jclass.getModifiers ();
+		boolean is_annotation = false;
 
 		Element e = doc.createElement (jclass.isInterface () && !jclass.isAnnotation () ? "interface" : "class");
 		if (!jclass.isInterface () || jclass.isAnnotation ()) {
@@ -475,7 +476,8 @@ public class JavaClass implements Comparable<JavaClass> {
 				e.setAttribute ("extends", getClassName (t2, true));
 		}
 
-		e.setAttribute ("name", getClassName (jclass, false));
+		String className = getClassName (jclass, false);
+		e.setAttribute ("name", className);
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
@@ -506,6 +508,9 @@ public class JavaClass implements Comparable<JavaClass> {
 			iface_elem.setAttribute ("name-generic-aware", getGenericTypeName (iface));
 			iface_elem.appendChild (doc.createTextNode ("\n"));
 			e.appendChild (iface_elem);
+			
+			if (iface_elem.getAttribute ("name").equals ("java.lang.annotation.Annotation"))
+				is_annotation = true;
 		}
 
 		for (Constructor ctor : jclass.getDeclaredConstructors ())
@@ -607,6 +612,25 @@ public class JavaClass implements Comparable<JavaClass> {
 		for (Field field : fields)
 			appendField (field, asmFields.get (field.getName ()), doc, e);
 		parent.appendChild (e);
+		
+		if (is_annotation)
+			parent.appendChild (createAnnotationMock (doc, className));
+	}
+
+	static Element createAnnotationMock (Document doc, String name)
+	{
+		Element e = doc.createElement ("class");
+		e.setAttribute ("abstract", "true");
+		e.setAttribute ("deprecated", "not deprecated");
+		e.setAttribute ("extends", "java.lang.Object");
+		e.setAttribute ("final", "false");
+		e.setAttribute ("name", name);
+		e.setAttribute ("static", "false");
+		e.setAttribute ("visibility", "public");
+		Element i = doc.createElement ("implements");
+		i.setAttribute ("name", "java.lang.annotation.Annotation");
+		e.appendChild (i);
+		return e;
 	}
 	
 	static final Field [] empty_array = new Field [0];
