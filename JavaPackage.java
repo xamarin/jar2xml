@@ -64,9 +64,7 @@ public class JavaPackage implements Comparable<JavaPackage> {
 		Collections.sort (classes);
 		for (int i = 0; i < classes.size (); i++) {
 			String name = classes.get (i).getName ();
-			int idx = name.lastIndexOf ('$');
-			idx = idx < 0 ? name.lastIndexOf ('.') : idx;
-			String body = idx < 0 ? name : name.substring (idx + 1);
+			String body = getLastNameComponent (name);
 			if (isObfuscatedName (body))
 				classes.get (i).setObfuscated (true);
 		}
@@ -74,12 +72,48 @@ public class JavaPackage implements Comparable<JavaPackage> {
 			c.appendToDocument (doc, e);
 	}
 	
-	static boolean isObfuscatedName (String name)
+	static final String [] a_names = new String [] {
+		"a", "aa", "aaa", "aaaa", "aaaaa"};
+	
+	boolean isObfuscatedName (String name)
 	{
+		boolean allA = true;
+		for (char c : name.toCharArray ())
+			if (c != 'a') {
+				allA = false;
+				break;
+			}
+		if (allA)
+			return true;
 		for (char c : name.toCharArray ())
 			if (c != '$' && (c < 'a' || 'z' < c) && (c < '0' || '9' < c))
 				return false;
-		return true;
+
+		// There must be preceding 'a', 'aa' or {anything with only 'a' or '$' and matches the length}.
+		// If there isn't such a class in this package, then the argument name is not likely obfuscated.
+		//
+		// This will save R.anim, R.id, Manifest.permission etc.
+		//
+		// (Comparison limited up to "aaaaa", there wouldn't be more than that)
+		
+		int length = name.length ();
+		String allAString = a_names [length < 5 ? length - 1 : 4];
+		
+		for (int i = 0; i < classes.size (); i++) {
+			String cname = classes.get (i).getName ();
+			String body = getLastNameComponent (cname);
+			if (body.equals (allAString)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	static String getLastNameComponent (String name)
+	{
+		int idx = name.lastIndexOf ('$');
+		idx = idx < 0 ? name.lastIndexOf ('.') : idx;
+		return idx < 0 ? name : name.substring (idx + 1);
 	}
 }
 
