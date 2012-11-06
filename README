@@ -308,15 +308,3 @@ Now we use ASM to solve the issues below:
 
   android.view.MotionEvent.getSource() is also missing.
 </maybe-historical>
-
-** Erased generic issues
-
-<workarounded>
-- extraneous "CompareTo(Object)" method
-  - e.g. android.net.Uri, java.util.Calendar, java.util.Date, java.util.UUID, java.nio.Charset and so on.
-  - They implement Comparable<T> and since either <T> went away in
-    android.jar or jar2xml ignores generic type arguments and treats T
-    arg as Object, this extra method is returned.
-- similarly, Comparator<T> brings extra Compare(Object, Object) overloads.
-
-</workarounded>

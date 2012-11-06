@@ -435,6 +435,17 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		StringBuffer sig = new StringBuffer ();
 		sig.append (method.getName ());
+		for (Class t : method.getParameterTypes ()) {
+			sig.append (":");
+			sig.append (t.getName ());
+		}
+		return sig.toString ();
+	}
+
+	String getGenericSignature (Method method)
+	{
+		StringBuffer sig = new StringBuffer ();
+		sig.append (method.getName ());
 		for (Type t : method.getGenericParameterTypes ()) {
 			sig.append (":");
 			sig.append (getGenericTypeName (t));
@@ -461,6 +472,20 @@ public class JavaClass implements Comparable<JavaClass> {
 		}
 	}
 	
+	Comparator clscmp = new Comparator<Class> () {
+		public int compare (Class c1, Class c2) {
+			return c1.getName ().compareTo (c2.getName ());
+		}
+	};
+	
+	boolean isInPublicInheritanceChain (Class cls)
+	{
+		for (Class c = cls; c != null; c = c.getSuperclass ())
+			if ((c.getModifiers () & Modifier.PUBLIC) == 0)
+				return false;
+		return true;
+	}
+
 	void doAppendToDocument (Document doc, Element parent)
 	{
 		int mods = jclass.getModifiers ();
@@ -519,6 +544,13 @@ public class JavaClass implements Comparable<JavaClass> {
 		Class base_class = jclass.getSuperclass ();
 		Map<String, Method> methods = new HashMap <String, Method> ();
 		for (Method method : jclass.getDeclaredMethods ()) {
+			// Skip "synthetic" methods that is automatically supplied by JRE.
+			// But there is an exception scenario: if the class is derived from non-public class,
+			// don't do that - it results in excessive removal.
+			// e.g. in libcore/luni, StringBuilder inherits non-public AbstractStringBuilder.
+			if (method.isSynthetic () && isInPublicInheritanceChain (jclass))
+				continue;
+			
 			int mmods = method.getModifiers ();
 
 /*
@@ -569,22 +601,8 @@ public class JavaClass implements Comparable<JavaClass> {
 					}
 				}
 			}
-			
-			Comparator clscmp = new Comparator<Class> () {
-				public int compare (Class c1, Class c2) {
-					return c1.getName ().compareTo (c2.getName ());
-				}
-			};
-			
-			// These special rules are required to filter out incorrectly returned compareTo(Object) Comparable<T> implementation (maybe it is due to "erased generics").
-			if (Arrays.binarySearch (jclass.getInterfaces (), Comparable.class, clscmp) >= 0 && method.getName ().equals ("compareTo") && ptypes [0].equals (Object.class)
-			    // IF this worked in Java ... <code>if (... && ptypes [0] != jclass.GetGenericArguments () [0])</code>
-			    && !jclass.equals (java.io.ObjectStreamField.class))
-				continue;
-			if (Arrays.binarySearch (jclass.getInterfaces (), Comparator.class, clscmp) >= 0 && method.getName ().equals ("compare") && ptypes.length == 2 && ptypes [0].equals (Object.class) && ptypes [1].equals (Object.class))
-				continue;
 
-			String key = getSignature (method);
+			String key = getGenericSignature (method);
 			if (methods.containsKey (key)) {
 				Type method_type = method.getGenericReturnType ();
 				Method hashed = methods.get (key);
