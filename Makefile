@@ -117,10 +117,10 @@ docs-api-13: docs-3.2_r01-linux.zip
 docs-api-14: docs-14_r01.zip
 	$(call extract-docs,$<,docs)
 
-docs-api-15: docs-15_r01.zip
+docs-api-15: docs-15_r02.zip
 	$(call extract-docs,$<,docs)
 
-docs-api-16: docs-16_r01.zip
+docs-api-16: docs-16_r03.zip
 	$(call extract-docs,$<,docs)
 
 docs-api-17: docs-17_r01.zip
