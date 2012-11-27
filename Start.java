@@ -114,7 +114,7 @@ public class Start {
 			for (JavaPackage pkg : jar.getPackages ())
 				pkg.appendToDocument (doc, root);
 		} catch (Exception e) {
-			System.err.println (e);
+			e.printStackTrace ();
 			System.err.println ("error J2X0002: API analyzer failed with java exception. See verbose output for details.");
 			System.exit (1);
 		}
