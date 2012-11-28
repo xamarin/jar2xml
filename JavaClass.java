@@ -146,9 +146,75 @@ public class JavaClass implements Comparable<JavaClass> {
 		e.setAttribute ("visibility", Modifier.isPublic (mods) ? "public" : "protected");
 		setDeprecatedAttr (e, ctor.getDeclaredAnnotations (), e.getAttribute ("name"));
 		
-		appendParameters (parent.getAttribute ("name"), ctor.getGenericParameterTypes (), getConstructorParameterOffset (ctor), ctor.isVarArgs (), doc, e);
+		appendParameters (parent.getAttribute ("name"), getGenericParameterTypes (ctor), getConstructorParameterOffset (ctor), ctor.isVarArgs (), doc, e);
 		e.appendChild (doc.createTextNode ("\n"));
 		parent.appendChild (e);
+	}
+	
+	Type [] getGenericParameterTypes (Method m)
+	{
+		try {
+			return m.getGenericParameterTypes ();
+		} catch (Exception ex) {
+			ex.printStackTrace ();
+			System.err.println ("warning J2XA00A: Java reflection engine failed to get generic parameter types for method '" + m + "'. For details, check verbose build output.");
+			return m.getParameterTypes ();
+		}
+	}
+	
+	Type [] getGenericParameterTypes (Constructor m)
+	{
+		try {
+			return m.getGenericParameterTypes ();
+		} catch (Exception ex) {
+			ex.printStackTrace ();
+			System.err.println ("warning J2XA00B: Java reflection engine failed to get generic parameter types for constructor '" + m + "'. For details, check verbose build output.");
+			return m.getParameterTypes ();
+		}
+	}
+
+	Type getGenericType (Field f)
+	{
+		try {
+			return f.getGenericType ();
+		} catch (Exception ex) {
+			ex.printStackTrace ();
+			System.err.println ("warning J2XA00C: Java reflection engine failed to get generic type for field '" + f + "'. For details, check verbose build output.");
+			return f.getType ();
+		}
+	}
+
+	Type getGenericReturnType (Method m)
+	{
+		try {
+			return m.getGenericReturnType ();
+		} catch (Exception ex) {
+			ex.printStackTrace ();
+			System.err.println ("warning J2XA00D: Java reflection engine failed to get generic return type for method '" + m + "'. For details, check verbose build output.");
+			return m.getReturnType ();
+		}
+	}
+
+	Type getGenericSuperclass (Class c)
+	{
+		try {
+			return c.getGenericSuperclass ();
+		} catch (Exception ex) {
+			ex.printStackTrace ();
+			System.err.println ("warning J2XA00E: Java reflection engine failed to get generic super class for class '" + c + "'. For details, check verbose build output.");
+			return c.getSuperclass ();
+		}
+	}
+
+	Type [] getGenericInterfaces (Class c)
+	{
+		try {
+			return c.getGenericInterfaces ();
+		} catch (Exception ex) {
+			ex.printStackTrace ();
+			System.err.println ("warning J2XA00F: Java reflection engine failed to get generic interface types for class '" + c + "'. For details, check verbose build output.");
+			return c.getInterfaces ();
+		}
 	}
 	
 	int getConstructorParameterOffset (Constructor ctor)
@@ -156,7 +222,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (Modifier.isStatic (jclass.getModifiers ()))
 			return 0; // this has nothing to do with static class
 
-		Type [] params = ctor.getGenericParameterTypes ();
+		Type [] params = getGenericParameterTypes (ctor);
 		if (params.length > 0 && params [0].equals (jclass.getDeclaringClass ()))
 			return 1;
 		return 0;
@@ -179,8 +245,8 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		Element e = doc.createElement ("field");
 		e.setAttribute ("name", field.getName ());
-		e.setAttribute ("type-generic-aware", getGenericTypeName (field.getGenericType ()));
 		e.setAttribute ("type", getClassName (field.getType (), true));
+		e.setAttribute ("type-generic-aware", getGenericTypeName (getGenericType (field)));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		if (Modifier.isAbstract (mods))
@@ -308,7 +374,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		if (typeParameters != null)
 			e.appendChild (typeParameters);
 
-		e.setAttribute ("return", getGenericTypeName (method.getGenericReturnType ()));
+		e.setAttribute ("return", getGenericTypeName (getGenericReturnType (method)));
 		e.setAttribute ("final", Modifier.isFinal (mods) ? "true" : "false");
 		e.setAttribute ("static", Modifier.isStatic (mods) ? "true" : "false");
 		e.setAttribute ("abstract", Modifier.isAbstract (mods) ? "true" : "false");
@@ -327,7 +393,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		easyName += ")";
 		setDeprecatedAttr (e, method.getDeclaredAnnotations (), easyName);
 
-		appendParameters (method.getName (), method.getGenericParameterTypes (), 0, method.isVarArgs (), doc, e);
+		appendParameters (method.getName (), getGenericParameterTypes (method), 0, method.isVarArgs (), doc, e);
 
 		Class [] excTypes = method.getExceptionTypes ();
 		sortClasses (excTypes);
@@ -446,7 +512,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		StringBuffer sig = new StringBuffer ();
 		sig.append (method.getName ());
-		for (Type t : method.getGenericParameterTypes ()) {
+		for (Type t : getGenericParameterTypes (method)) {
 			sig.append (":");
 			sig.append (getGenericTypeName (t));
 		}
@@ -492,7 +558,7 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		Element e = doc.createElement (jclass.isInterface () && !jclass.isAnnotation () ? "interface" : "class");
 		if (!jclass.isInterface () || jclass.isAnnotation ()) {
-			Type t = jclass.getGenericSuperclass ();
+			Type t = getGenericSuperclass (jclass);
 			if (t != null)
 				e.setAttribute ("extends-generic-aware", getGenericTypeName (t));
 			Class t2 = jclass.getSuperclass ();
@@ -515,7 +581,7 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		setDeprecatedAttr (e, jclass.getDeclaredAnnotations (), e.getAttribute ("name"));
 		// generic-aware name is required when we resolve types.
-		Type [] ifaces = jclass.getGenericInterfaces ();
+		Type [] ifaces = getGenericInterfaces (jclass);
 		//Class [] ifaces = jclass.getInterfaces ();
 		sortTypes (ifaces);
 		for (Type iface : ifaces) {
@@ -600,16 +666,16 @@ public class JavaClass implements Comparable<JavaClass> {
 
 			String key = getGenericSignature (method);
 			if (methods.containsKey (key)) {
-				Type method_type = method.getGenericReturnType ();
+				Type method_type = getGenericReturnType (method);
 				Method hashed = methods.get (key);
-				Type hashed_type = hashed.getGenericReturnType ();
+				Type hashed_type = getGenericReturnType (hashed);
 				Class mret = method_type instanceof Class ? (Class) method_type : null;
 				Class hret = hashed_type instanceof Class ? (Class) hashed_type : null;
 				if (mret == null || (hret != null && hret.isAssignableFrom (mret)))
 					methods.put (key, method);
 				else if (hret != null && !mret.isAssignableFrom (hret)) {
 					System.err.print ("warning J2XA007: method collision: " + jclass.getName () + "." + key);
-					System.err.println ("   " + hashed.getGenericReturnType ().toString () + " ----- " + method.getGenericReturnType ().toString ());
+					System.err.println ("   " + getGenericReturnType (hashed).toString () + " ----- " + getGenericReturnType (method).toString ());
 				}
 			} else {
 				methods.put (key, method);
