@@ -216,6 +216,15 @@ public class JavaClass implements Comparable<JavaClass> {
 			return c.getInterfaces ();
 		}
 	}
+
+	static Type [] getActualTypeArguments (ParameterizedType ptype)
+	{
+		Type [] types = ptype.getActualTypeArguments ();
+		for (Type t : types)
+			if (t == null) // libcore failed to retrieve type.
+				return new Type [0];
+		return types;
+	}
 	
 	int getConstructorParameterOffset (Constructor ctor)
 	{
@@ -766,16 +775,19 @@ public class JavaClass implements Comparable<JavaClass> {
 			// toString() does not work fine for ParameterizedType, so do it by ourselves.
 			ParameterizedType ptype = (ParameterizedType) type;
 			StringBuilder sb = new StringBuilder ();
-			sb.append (getGenericTypeName (ptype.getRawType ())).append ('<');
-			boolean follow = false;
-			for (Type ta : ptype.getActualTypeArguments ()) {
-				if (follow)
+			sb.append (getGenericTypeName (ptype.getRawType ()));
+			boolean occured = false;
+			for (Type ta : getActualTypeArguments (ptype)) {
+				if (occured)
 					sb.append (", ");
-				else
-					follow = true;
+				else {
+					sb.append ('<');
+					occured = true;
+				}
 				sb.append (getGenericTypeName (ta));
 			}
-			sb.append ('>');
+			if (occured)
+				sb.append ('>');
 			return sb.toString ();
 		} else {
 			try {
