@@ -11,6 +11,10 @@ clean:
 	-rm -rf annotations
 	-rm -rf scraper.exe scraper.exe.mdb
 
+install:
+
+uninstall:
+
 sources = \
 	AndroidDocScraper.java \
 	IDocScraper.java \
