@@ -792,7 +792,9 @@ public class JavaClass implements Comparable<JavaClass> {
 		} else {
 			try {
 				return type.toString ().replace ('$', '.').replace ("java.lang.Void", "void");
-			} catch (TypeNotPresentException e) { // Oracle has buggy Type.toString() implementation that throws this error at this late.
+			} catch (Exception e) {
+				// Oracle has buggy Type.toString() implementation that throws this error at this late.
+				// Also bug #10744 reports NullPointerException in getGenericTypeName().
 				System.err.println (e);
 				System.err.println ("warning J2XA009: Java failed to resolve type. See verbose output for details.");
 				return "";
