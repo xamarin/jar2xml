@@ -535,7 +535,7 @@ public class JavaClass implements Comparable<JavaClass> {
 
 		String qualname = jclass.getName ();
 		String basename = isFullname ? qualname : qualname.substring (jclass.getPackage ().getName ().length () + 1, qualname.length ());
-		return basename.replace ("$", ".").replace ("java.lang.Void", "void");
+		return basename.replace ("$", ".");
 	}
 
 	public void appendToDocument (Document doc, Element parent)
@@ -764,13 +764,13 @@ public class JavaClass implements Comparable<JavaClass> {
 				else if (name.equals ("Z"))
 					return "boolean" + suffix;
 				else if (name.charAt (0) == 'L')
-					return name.substring (1, name.length () - 1).replace ('$', '.').replace ("java.lang.Void", "void") + suffix;
+					return name.substring (1, name.length () - 1).replace ('$', '.') + suffix;
 				else {
 					System.err.println ("warning J2XA008: unexpected array type name '" + name + "'");
 					return "";
 				}
 			}
-			return name.replace ('$', '.').replace ("java.lang.Void", "void");
+			return name.replace ('$', '.');
 		} else if (type instanceof ParameterizedType) {
 			// toString() does not work fine for ParameterizedType, so do it by ourselves.
 			ParameterizedType ptype = (ParameterizedType) type;
@@ -788,10 +788,10 @@ public class JavaClass implements Comparable<JavaClass> {
 			}
 			if (occured)
 				sb.append ('>');
-			return sb.toString ().replace ("java.lang.Void", "void");
+			return sb.toString ();
 		} else {
 			try {
-				return type.toString ().replace ('$', '.').replace ("java.lang.Void", "void");
+				return type.toString ().replace ('$', '.');
 			} catch (Exception e) {
 				// Oracle has buggy Type.toString() implementation that throws this error at this late.
 				// Also bug #10744 reports NullPointerException in getGenericTypeName().
