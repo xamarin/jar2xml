@@ -4,6 +4,8 @@ TARGET=jar2xml.jar
 
 all: $(TARGET) 
 
+all-api: api-4.xml.in api-7.xml.in api-8.xml.in api-10.xml.in api-12.xml.in api-13.xml.in api-14.xml.in api-15.xml.in api-16.xml.in api-17.xml.in
+
 clean:
 	-rm -rf obj
 	-rm $(TARGET)
@@ -127,7 +129,7 @@ docs-api-15: docs-15_r02.zip
 docs-api-16: docs-16_r03.zip
 	$(call extract-docs,$<,docs)
 
-docs-api-17: docs-17_r01.zip
+docs-api-17: docs-17_r02.zip
 	$(call extract-docs,$<,docs)
 
 api-%.xml.org:

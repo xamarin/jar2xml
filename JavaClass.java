@@ -565,8 +565,8 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		int mods = jclass.getModifiers ();
 
-		Element e = doc.createElement (jclass.isInterface () && !jclass.isAnnotation () ? "interface" : "class");
-		if (!jclass.isInterface () || jclass.isAnnotation ()) {
+		Element e = doc.createElement (jclass.isInterface () ? "interface" : "class");
+		if (!jclass.isInterface ()) {
 			Type t = getGenericSuperclass (jclass);
 			if (t != null)
 				e.setAttribute ("extends-generic-aware", getGenericTypeName (t));
