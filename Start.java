@@ -56,8 +56,12 @@ public class Start {
 		for (String arg : args) {
 			if (arg.startsWith ("--javadocpath=")) {
 				javadocs = arg.substring (14);
+				if (!javadocs.endsWith ("/"))
+					javadocs += "/";
 			} else if (arg.startsWith ("--droiddocpath=")) {
 				droiddocs = arg.substring (15);
+				if (!droiddocs.endsWith ("/"))
+					droiddocs += "/";
 			} else if (arg.startsWith ("--annotations=")) {
 				annots = arg.substring (14);
 			} else if (arg.startsWith ("--jar=")) {
