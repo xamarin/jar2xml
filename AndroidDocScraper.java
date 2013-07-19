@@ -113,8 +113,11 @@ public abstract class AndroidDocScraper implements IDocScraper {
 			String type = JavaClass.getGenericTypeName (ptypes[i]);
 			if (isVarArgs && i == ptypes.length - 1)
 				type = type.replace ("[]", "...");
-			if (type.indexOf ('<') > 0) // remove generic args in href
-				type = type.substring (0, type.indexOf ('<'));
+			// FIXME: some javadocs (e.g. OSMDroid) seems to cause type name mismatch
+			// by having generic arguments in this type name, but removing this causes
+			// android-support-4 parse regression. We need to revisit here later.
+			//if (type.indexOf ('<') > 0) // remove generic args in href
+			//	type = type.substring (0, type.indexOf ('<'));
 			buffer.append (type);
 		}
 		buffer.append("\\E\\)\".*\\((.*)\\)");
