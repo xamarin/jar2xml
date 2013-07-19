@@ -36,7 +36,7 @@ class DroidDocScraper extends AndroidDocScraper {
 	static final String pattern_head_droiddoc = "<span class=\"sympad\"><a href=\".*";
 
 	public DroidDocScraper (File dir) throws IOException {
-		super (dir, pattern_head_droiddoc, null, null);
+		super (dir, pattern_head_droiddoc, null, null, false);
 	}
 }
 
@@ -46,7 +46,17 @@ class JavaDocScraper extends AndroidDocScraper {
 	static final String parameter_pair_splitter_javadoc = "&nbsp;";
 
 	public JavaDocScraper (File dir) throws IOException {
-		super (dir, pattern_head_javadoc, reset_pattern_head_javadoc, parameter_pair_splitter_javadoc);
+		super (dir, pattern_head_javadoc, reset_pattern_head_javadoc, parameter_pair_splitter_javadoc, false);
+	}
+}
+
+class Java7DocScraper extends AndroidDocScraper {
+	static final String pattern_head_javadoc = "<td class=\"col.+\"><code><strong><a href=\"[./]*"; // I'm not sure how path could be specified... (./ , ../ , or even /)
+	static final String reset_pattern_head_javadoc = "<td><code>";
+	static final String parameter_pair_splitter_javadoc = "&nbsp;";
+
+	public Java7DocScraper (File dir) throws IOException {
+		super (dir, pattern_head_javadoc, reset_pattern_head_javadoc, parameter_pair_splitter_javadoc, true);
 	}
 }
 
@@ -55,10 +65,11 @@ public abstract class AndroidDocScraper implements IDocScraper {
 	final String pattern_head;
 	final String reset_pattern_head;
 	final String parameter_pair_splitter;
+	final boolean continuous_param_lines;
 
 	File root;
 
-	protected AndroidDocScraper (File dir, String patternHead, String resetPatternHead, String parameterPairSplitter) throws IOException {
+	protected AndroidDocScraper (File dir, String patternHead, String resetPatternHead, String parameterPairSplitter, boolean continuousParamLines) throws IOException {
 
 		if (dir == null)
 			throw new IllegalArgumentException ();
@@ -66,6 +77,7 @@ public abstract class AndroidDocScraper implements IDocScraper {
 		pattern_head = patternHead;
 		reset_pattern_head = resetPatternHead;
 		parameter_pair_splitter = parameterPairSplitter != null ? parameterPairSplitter : "\\s+";
+		continuous_param_lines = continuousParamLines;
 
 		if (!dir.exists())
 			throw new FileNotFoundException (dir.getAbsolutePath());
@@ -101,6 +113,8 @@ public abstract class AndroidDocScraper implements IDocScraper {
 			String type = JavaClass.getGenericTypeName (ptypes[i]);
 			if (isVarArgs && i == ptypes.length - 1)
 				type = type.replace ("[]", "...");
+			if (type.indexOf ('<') > 0) // remove generic args in href
+				type = type.substring (0, type.indexOf ('<'));
 			buffer.append (type);
 		}
 		buffer.append("\\E\\)\".*\\((.*)\\)");
@@ -133,7 +147,7 @@ public abstract class AndroidDocScraper implements IDocScraper {
 					}
 					// sometimes we get incomplete tag, so cache it until it gets complete or matched.
 					// I *know* this is a hack.
-					if (reset_pattern_head == null || text.endsWith (">") || !text.startsWith (reset_pattern_head))
+					if (reset_pattern_head == null || text.endsWith (">") || !continuous_param_lines && !text.startsWith (reset_pattern_head))
 						prev = null;
 					else
 						prev = text;
