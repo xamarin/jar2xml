@@ -476,6 +476,21 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		if (tps.length == 0)
 			return null;
+		try {
+			return doGetTypeParametersNode (doc, tps);
+		} catch (TypeNotPresentException ex) {
+			System.err.println ("warning J2XA010: referenced type was not present: " + ex.getMessage ());
+			return null;
+		} catch (NoClassDefFoundError ex) {
+			System.err.println ("warning J2XA011: missing class error was raised: " + ex.getMessage ());
+			return null;
+		}
+	}
+	
+	static Element doGetTypeParametersNode (Document doc,  TypeVariable<Method>[] tps)
+	{
+		if (tps.length == 0)
+			return null;
 		Element tps_elem = doc.createElement ("typeParameters");
 		for (TypeVariable<?> tp : tps) {
 			Element tp_elem = doc.createElement ("typeParameter");
