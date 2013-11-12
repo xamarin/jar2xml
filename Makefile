@@ -17,6 +17,10 @@ install:
 
 uninstall:
 
+deploy:
+
+undeploy:
+
 sources = \
 	AndroidDocScraper.java \
 	IDocScraper.java \
