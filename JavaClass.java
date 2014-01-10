@@ -558,6 +558,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		try {
 			doAppendToDocument (doc, parent);
 		} catch (NoClassDefFoundError ex) {
+			ex.printStackTrace ();
 			System.err.println ("warning J2XA006: missing class error was raised while reflecting " + jclass.getName () + " : " + ex.getMessage ());
 		}
 	}
