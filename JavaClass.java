@@ -155,7 +155,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		try {
 			return m.getGenericParameterTypes ();
-		} catch (Error ex) {
+		} catch (Throwable ex) {
 			ex.printStackTrace ();
 			System.err.println ("warning J2XA00A: Java reflection engine failed to get generic parameter types for method '" + m + "'. For details, check verbose build output.");
 			return m.getParameterTypes ();
@@ -166,7 +166,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		try {
 			return m.getGenericParameterTypes ();
-		} catch (Error ex) {
+		} catch (Throwable ex) {
 			ex.printStackTrace ();
 			System.err.println ("warning J2XA00B: Java reflection engine failed to get generic parameter types for constructor '" + m + "'. For details, check verbose build output.");
 			return m.getParameterTypes ();
@@ -177,7 +177,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		try {
 			return f.getGenericType ();
-		} catch (Error ex) {
+		} catch (Throwable ex) {
 			ex.printStackTrace ();
 			System.err.println ("warning J2XA00C: Java reflection engine failed to get generic type for field '" + f + "'. For details, check verbose build output.");
 			return f.getType ();
@@ -188,7 +188,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		try {
 			return m.getGenericReturnType ();
-		} catch (Error ex) {
+		} catch (Throwable ex) {
 			ex.printStackTrace ();
 			System.err.println ("warning J2XA00D: Java reflection engine failed to get generic return type for method '" + m + "'. For details, check verbose build output.");
 			return m.getReturnType ();
@@ -199,7 +199,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		try {
 			return c.getGenericSuperclass ();
-		} catch (Error ex) {
+		} catch (Throwable ex) {
 			ex.printStackTrace ();
 			System.err.println ("warning J2XA00E: Java reflection engine failed to get generic super class for class '" + c + "'. For details, check verbose build output.");
 			return c.getSuperclass ();
@@ -210,7 +210,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		try {
 			return c.getGenericInterfaces ();
-		} catch (Error ex) {
+		} catch (Throwable ex) {
 			ex.printStackTrace ();
 			System.err.println ("warning J2XA00F: Java reflection engine failed to get generic interface types for class '" + c + "'. For details, check verbose build output.");
 			return c.getInterfaces ();
@@ -335,7 +335,7 @@ public class JavaClass implements Comparable<JavaClass> {
 				}
 				else if (Modifier.isStatic (mods) && e.getAttribute ("type").endsWith ("[]"))
 					e.setAttribute ("value", "null");
-			} catch (Error exc) {
+			} catch (Throwable exc) {
 				System.err.println ("warning J2XA004: error accessing constant field " + field.getName () + " value for class " + getName () + " : " + exc.getMessage ());
 			}
 		}
@@ -557,7 +557,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		try {
 			doAppendToDocument (doc, parent);
-		} catch (Error ex) {
+		} catch (Throwable ex) {
 			ex.printStackTrace ();
 			System.err.println ("warning J2XA006: missing class error was raised while reflecting " + jclass.getName () + " : " + ex.getMessage ());
 		}
@@ -808,7 +808,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		} else {
 			try {
 				return type.toString ().replace ('$', '.');
-			} catch (Error e) {
+			} catch (Throwable e) {
 				// Oracle has buggy Type.toString() implementation that throws this error at this late.
 				// Also bug #10744 reports NullPointerException in getGenericTypeName().
 				System.err.println (e);
