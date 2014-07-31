@@ -128,6 +128,8 @@ public class JavaClass implements Comparable<JavaClass> {
 	{
 		try {
 			doAppendCtor (ctor, doc, parent);
+		} catch (IncompatibleClassChangeError ex) {
+			System.err.println ("warning J2XA001: missing class error was raised while reflecting " + ctor.getName () + " [" + ctor + "] : " + ex.getMessage ());
 		} catch (NoClassDefFoundError ex) {
 			System.err.println ("warning J2XA001: missing class error was raised while reflecting " + ctor.getName () + " [" + ctor + "] : " + ex.getMessage ());
 		}
