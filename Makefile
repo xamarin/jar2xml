@@ -1,10 +1,10 @@
-API_LEVELS = 4 7 8 10 12 13 14 15 16 17 18 19 20 L
+API_LEVELS = 4 7 8 10 12 13 14 15 16 17 18 19 20 21
 
 TARGET=jar2xml.jar 
 
 all: $(TARGET) 
 
-all-api: api-4.xml.in api-7.xml.in api-8.xml.in api-10.xml.in api-12.xml.in api-13.xml.in api-14.xml.in api-15.xml.in api-16.xml.in api-17.xml.in api-18.xml.in api-19.xml.in api-20.xml.in api-L.xml.in
+all-api: api-4.xml.in api-7.xml.in api-8.xml.in api-10.xml.in api-12.xml.in api-13.xml.in api-14.xml.in api-15.xml.in api-16.xml.in api-17.xml.in api-18.xml.in api-19.xml.in api-20.xml.in api-21.xml.in
 
 clean:
 	-rm -rf obj
@@ -99,8 +99,8 @@ clean-19:
 clean-20:
 	rm api-20.xml.in annotations/20.xml tmpout/20-deprecated-members.xml
 
-clean-L:
-	rm api-L.xml.in annotations/L.xml tmpout/L-deprecated-members.xml
+clean-21:
+	rm api-21.xml.in annotations/21.xml tmpout/21-deprecated-members.xml
 
 # download and setup docs directory for each API profile
 
@@ -154,10 +154,11 @@ docs-api-18: docs-18_r01.zip
 docs-api-19: docs-19_r01.zip
 	$(call extract-docs,$<,docs)
 
-docs-api-20: docs-L_r01.zip
+# no 20 doc in final release either...
+docs-api-20: docs-21_r01.zip
 	$(call extract-docs,$<,docs)
 
-docs-api-L: docs-L_r01.zip
+docs-api-21: docs-21_r01.zip
 	$(call extract-docs,$<,docs)
 
 api-%.xml.org:
