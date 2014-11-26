@@ -506,7 +506,7 @@ public class JavaClass implements Comparable<JavaClass> {
 					Class tcc = tc instanceof Class ? (Class) tc : null;
 					ParameterizedType pt = tc instanceof ParameterizedType ? (ParameterizedType) tc : null;
 					if (tcc != null)
-						tc_elem.setAttribute ("type", tcc.getName ());
+						tc_elem.setAttribute ("type", getClassName (tcc, true));
 					else if (pt != null)
 						tc_elem.setAttribute ("type", getGenericTypeName (pt));
 					else if (tc instanceof TypeVariable<?>)
