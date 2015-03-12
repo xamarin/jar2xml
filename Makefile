@@ -1,10 +1,10 @@
-API_LEVELS = 4 7 8 10 12 13 14 15 16 17 18 19 20 21
+API_LEVELS = 10 15 16 17 18 19 20 21 22
 
 TARGET=jar2xml.jar 
 
 all: $(TARGET) 
 
-all-api: api-4.xml.in api-7.xml.in api-8.xml.in api-10.xml.in api-12.xml.in api-13.xml.in api-14.xml.in api-15.xml.in api-16.xml.in api-17.xml.in api-18.xml.in api-19.xml.in api-20.xml.in api-21.xml.in
+all-api: api-10.xml.in api-15.xml.in api-16.xml.in api-17.xml.in api-18.xml.in api-19.xml.in api-20.xml.in api-21.xml.in api-22.xml.in
 
 clean:
 	-rm -rf obj
@@ -48,38 +48,10 @@ $(API_LEVELS:%=api-%.xml.in): api-%.xml.in: Makefile jar2xml.jar docs-api-% anno
 	rm $@.tmp $@.tmp2
 
 # test API levels
-test-4: api-4.xml.org api-4.xml.in
-
-test-7: api-7.xml.org api-7.xml.in
-
-test-8: api-8.xml.org api-8.xml.in
-
-test-9: api-9.xml.org api-9.xml.in
-
 test-10: api-10.xml.org api-10.xml.in
-
-# (These rules are to get diff agains 10.)
-test-12: api-10.xml.org api-12.xml.in
-
-test-13: api-10.xml.org api-13.xml.in
-
-clean-8:
-	rm api-8.xml.in annotations/8.xml tmpout/8-deprecated-members.xml
-
-clean-9:
-	rm api-9.xml.in annotations/9.xml tmpout/9-deprecated-members.xml
 
 clean-10:
 	rm api-10.xml.in annotations/10.xml tmpout/10-deprecated-members.xml
-
-clean-12:
-	rm api-12.xml.in annotations/12.xml tmpout/12-deprecated-members.xml
-
-clean-13:
-	rm api-13.xml.in annotations/13.xml tmpout/13-deprecated-members.xml
-
-clean-14:
-	rm api-14.xml.in annotations/14.xml tmpout/14-deprecated-members.xml
 
 clean-15:
 	rm api-15.xml.in annotations/15.xml tmpout/15-deprecated-members.xml
@@ -102,6 +74,10 @@ clean-20:
 clean-21:
 	rm api-21.xml.in annotations/21.xml tmpout/21-deprecated-members.xml
 
+clean-22:
+	rm api-22.xml.in annotations/22.xml tmpout/22-deprecated-members.xml
+
+
 # download and setup docs directory for each API profile
 
 define extract-docs
@@ -112,32 +88,10 @@ endef
 docs-%.zip:
 	curl http://dl-ssl.google.com/android/repository/$@ > $@ || exit 1
 
-# we couldn't find doc archive for Lv.4, so reusing Lv.7 archive here...
-docs-api-4: docs-2.1_r01-linux.zip
-	$(call extract-docs,$<,docs-2.1_r01-linux)
-
-docs-api-7: docs-2.1_r01-linux.zip
-	$(call extract-docs,$<,docs-2.1_r01-linux)
-
-docs-api-8: docs-2.2_r01-linux.zip
-	$(call extract-docs,$<,docs_r01-linux)
-
-docs-api-9: docs-2.3_r01-linux.zip
-	$(call extract-docs,$<,docs-2.3_r01-linux)
-
 # API level 10 is Android v2.3.3; it's API level 9 (Android v2.3) with a few
 # bugfixes which don't impact the documentation.
 docs-api-10: docs-2.3_r01-linux.zip
 	$(call extract-docs,$<,docs-2.3_r01-linux)
-
-docs-api-12: docs-3.1_r01-linux.zip
-	$(call extract-docs,$<,docs-3.1_r01-linux)
-
-docs-api-13: docs-3.2_r01-linux.zip
-	$(call extract-docs,$<,docs_r01-linux)
-
-docs-api-14: docs-14_r01.zip
-	$(call extract-docs,$<,docs)
 
 docs-api-15: docs-15_r02.zip
 	$(call extract-docs,$<,docs)
@@ -159,6 +113,9 @@ docs-api-20: docs-21_r01.zip
 	$(call extract-docs,$<,docs)
 
 docs-api-21: docs-21_r01.zip
+	$(call extract-docs,$<,docs)
+
+docs-api-22: docs-22_r01.zip
 	$(call extract-docs,$<,docs)
 
 api-%.xml.org:
