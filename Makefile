@@ -1,10 +1,10 @@
-API_LEVELS = 10 15 16 17 18 19 20 21 22
+API_LEVELS = 10 15 16 17 18 19 20 21 22 MNC
 
 TARGET=jar2xml.jar 
 
 all: $(TARGET) 
 
-all-api: api-10.xml.in api-15.xml.in api-16.xml.in api-17.xml.in api-18.xml.in api-19.xml.in api-20.xml.in api-21.xml.in api-22.xml.in
+all-api: api-10.xml.in api-15.xml.in api-16.xml.in api-17.xml.in api-18.xml.in api-19.xml.in api-20.xml.in api-21.xml.in api-22.xml.in api-MNC.xml.in
 
 clean:
 	-rm -rf obj
@@ -77,6 +77,8 @@ clean-21:
 clean-22:
 	rm api-22.xml.in annotations/22.xml tmpout/22-deprecated-members.xml
 
+clean-MNC:
+	rm api-MNC.xml.in annotations/MNC.xml tmpout/MNC-deprecated-members.xml
 
 # download and setup docs directory for each API profile
 
@@ -116,6 +118,9 @@ docs-api-21: docs-21_r01.zip
 	$(call extract-docs,$<,docs)
 
 docs-api-22: docs-22_r01.zip
+	$(call extract-docs,$<,docs)
+
+docs-api-MNC: docs-MNC_r01.zip
 	$(call extract-docs,$<,docs)
 
 api-%.xml.org:
