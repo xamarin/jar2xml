@@ -120,7 +120,7 @@ docs-api-21: docs-21_r01.zip
 docs-api-22: docs-22_r01.zip
 	$(call extract-docs,$<,docs)
 
-docs-api-MNC: docs-MNC_r01.zip
+docs-api-MNC: docs-MNC_r02.zip
 	$(call extract-docs,$<,docs)
 
 api-%.xml.org:
