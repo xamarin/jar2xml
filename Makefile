@@ -1,10 +1,10 @@
-API_LEVELS = 10 15 16 17 18 19 20 21 22 23
+API_LEVELS = 4 7 8 10 12 13 14 15 16 17 18 19 20 21 22 23
 
 TARGET=jar2xml.jar 
 
 all: $(TARGET) 
 
-all-api: api-10.xml.in api-15.xml.in api-16.xml.in api-17.xml.in api-18.xml.in api-19.xml.in api-20.xml.in api-21.xml.in api-22.xml.in api-23.xml.in
+all-api: api-4.xml.in api-7.xml.in api-8.xml.in api-10.xml.in api-12.xml.in api-13.xml.in api-14.xml.in api-15.xml.in api-16.xml.in api-17.xml.in api-18.xml.in api-19.xml.in api-20.xml.in api-21.xml.in api-22.xml.in api-23.xml.in
 
 clean:
 	-rm -rf obj
@@ -90,10 +90,29 @@ endef
 docs-%.zip:
 	curl http://dl-ssl.google.com/android/repository/$@ > $@ || exit 1
 
+# we couldn't find doc archive for Lv.4, so reusing Lv.7 archive here...
+docs-api-4: docs-2.1_r01-linux.zip
+	$(call extract-docs,$<,docs-2.1_r01-linux)
+
+docs-api-7: docs-2.1_r01-linux.zip
+	$(call extract-docs,$<,docs-2.1_r01-linux)
+
+docs-api-8: docs-2.2_r01-linux.zip
+	$(call extract-docs,$<,docs_r01-linux)
+
 # API level 10 is Android v2.3.3; it's API level 9 (Android v2.3) with a few
 # bugfixes which don't impact the documentation.
 docs-api-10: docs-2.3_r01-linux.zip
 	$(call extract-docs,$<,docs-2.3_r01-linux)
+
+docs-api-12: docs-3.1_r01-linux.zip
+	$(call extract-docs,$<,docs-3.1_r01-linux)
+
+docs-api-13: docs-3.2_r01-linux.zip
+	$(call extract-docs,$<,docs_r01-linux)
+
+docs-api-14: docs-14_r01.zip
+	$(call extract-docs,$<,docs)
 
 docs-api-15: docs-15_r02.zip
 	$(call extract-docs,$<,docs)
