@@ -60,16 +60,33 @@ class Java7DocScraper extends AndroidDocScraper {
 	}
 }
 
+class Java8DocScraper extends AndroidDocScraper {
+	static final String pattern_head_javadoc = "<td class=\"colLast\"><code><span class=\"memberNameLink\"><a href=\"[./]*"; // I'm not sure how path could be specified... (./ , ../ , or even /)
+	static final String reset_pattern_head_javadoc = "<td><code>";
+	static final String parameter_pair_splitter_javadoc = "&nbsp;";
+
+	public Java8DocScraper (File dir) throws IOException {
+		super (dir, pattern_head_javadoc, reset_pattern_head_javadoc, parameter_pair_splitter_javadoc, true, "-", "-", "-");
+	}
+}
+
 public abstract class AndroidDocScraper implements IDocScraper {
 
 	final String pattern_head;
 	final String reset_pattern_head;
 	final String parameter_pair_splitter;
+	final String open_method;
+	final String param_sep;
+	final String close_method;
 	final boolean continuous_param_lines;
 
 	File root;
 
 	protected AndroidDocScraper (File dir, String patternHead, String resetPatternHead, String parameterPairSplitter, boolean continuousParamLines) throws IOException {
+		this (dir, patternHead, resetPatternHead, parameterPairSplitter, continuousParamLines, "\\(\\Q", ", ", "\\E\\)");
+	}
+	
+	protected AndroidDocScraper (File dir, String patternHead, String resetPatternHead, String parameterPairSplitter, boolean continuousParamLines, String openMethod, String paramSep, String closeMethod) throws IOException {
 
 		if (dir == null)
 			throw new IllegalArgumentException ();
@@ -78,6 +95,9 @@ public abstract class AndroidDocScraper implements IDocScraper {
 		reset_pattern_head = resetPatternHead;
 		parameter_pair_splitter = parameterPairSplitter != null ? parameterPairSplitter : "\\s+";
 		continuous_param_lines = continuousParamLines;
+		open_method = openMethod;
+		param_sep = paramSep;
+		close_method = closeMethod;
 
 		if (!dir.exists())
 			throw new FileNotFoundException (dir.getAbsolutePath());
@@ -106,10 +126,10 @@ public abstract class AndroidDocScraper implements IDocScraper {
 		buffer.append (path);
 		buffer.append ("#");
 		buffer.append (name);
-		buffer.append ("\\(\\Q");
+		buffer.append (open_method);
 		for (int i = 0; i < ptypes.length; i++) {
 			if (i != 0)
-				buffer.append (", ");
+				buffer.append (param_sep);
 			String type = JavaClass.getGenericTypeName (ptypes[i]);
 			if (isVarArgs && i == ptypes.length - 1)
 				type = type.replace ("[]", "...");
@@ -120,7 +140,8 @@ public abstract class AndroidDocScraper implements IDocScraper {
 			//	type = type.substring (0, type.indexOf ('<'));
 			buffer.append (type);
 		}
-		buffer.append("\\E\\)\".*\\((.*)\\)");
+		buffer.append(close_method);
+		buffer.append("\".*\\((.*)\\)");
 		Pattern pattern = Pattern.compile (buffer.toString());
 
 		try {
@@ -147,7 +168,7 @@ public abstract class AndroidDocScraper implements IDocScraper {
 						}
 						stream.close();
 						return result;
-					}
+					} else System.err.println ("NOT MATCHING '" + buffer.toString() + "', INPUT: " + text);
 					// sometimes we get incomplete tag, so cache it until it gets complete or matched.
 					// I *know* this is a hack.
 					if (reset_pattern_head == null || text.endsWith (">") || !continuous_param_lines && !text.startsWith (reset_pattern_head))
