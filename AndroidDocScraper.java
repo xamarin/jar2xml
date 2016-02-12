@@ -168,7 +168,7 @@ public abstract class AndroidDocScraper implements IDocScraper {
 						}
 						stream.close();
 						return result;
-					} else System.err.println ("NOT MATCHING '" + buffer.toString() + "', INPUT: " + text);
+					}// else System.err.println ("NOT MATCHING '" + buffer.toString() + "', INPUT: " + text);
 					// sometimes we get incomplete tag, so cache it until it gets complete or matched.
 					// I *know* this is a hack.
 					if (reset_pattern_head == null || text.endsWith (">") || !continuous_param_lines && !text.startsWith (reset_pattern_head))
