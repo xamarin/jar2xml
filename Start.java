@@ -48,11 +48,12 @@ public class Start {
 		String droiddocs = null;
 		String javadocs = null;
 		String java7docs = null;
+		String java8docs = null;
 		String annots = null;
 		List<String> jar_paths = new ArrayList<String> ();
 		String out_path = null;
 		List<String> additional_jar_paths = new ArrayList<String> ();
-		String usage = "Usage: jar2xml --jar=<jarfile> [--ref=<jarfile>] --out=<file> [--javadocpath=<javadoc>] [--java7docpath=<java7doc>] [--droiddocpath=<droiddoc>] [--annotations=<xmlfile>]";
+		String usage = "Usage: jar2xml --jar=<jarfile> [--ref=<jarfile>] --out=<file> [--javadocpath=<javadoc>] [--java7docpath=<java7doc>] [--java8docpath=<java8doc>] [--droiddocpath=<droiddoc>] [--annotations=<xmlfile>]";
 
 		for (String arg : args) {
 			if (arg.startsWith ("--javadocpath=")) {
@@ -63,6 +64,10 @@ public class Start {
 				java7docs = arg.substring (15);
 				if (!java7docs.endsWith ("/"))
 					java7docs += "/";
+			} else if (arg.startsWith ("--java8docpath=")) {
+				java8docs = arg.substring (15);
+				if (!java8docs.endsWith ("/"))
+					java8docs += "/";
 			} else if (arg.startsWith ("--droiddocpath=")) {
 				droiddocs = arg.substring (15);
 				if (!droiddocs.endsWith ("/"))
@@ -106,6 +111,8 @@ public class Start {
 				JavaClass.addDocScraper (new JavaDocScraper (new File (javadocs)));
 			if (java7docs != null)
 				JavaClass.addDocScraper (new Java7DocScraper (new File (java7docs)));
+			if (java8docs != null)
+				JavaClass.addDocScraper (new Java8DocScraper (new File (java8docs)));
 		} catch (Exception e) {
 			e.printStackTrace ();
 			System.err.println ("warning J2X8001: Couldn't access javadocs at specified docpath.  Continuing without it...");
